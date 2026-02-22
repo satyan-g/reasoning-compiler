@@ -3,6 +3,7 @@ data/raw/
 data/synthetic/
 data/processed/
 results/
+chats/
 
 # Python
 __pycache__/

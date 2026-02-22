@@ -365,6 +365,60 @@ Nobody has combined these into a unified system for reasoning problems. Our mult
 
 ---
 
+## Flowcharts as Trace Representation for the Reasoning Repository (NEW — Feb 2026)
+
+### The problem: how do you represent mined reasoning traces?
+
+The AGI section (below) argues that open-ended reasoning is tractable given a sufficiently large, well-indexed repository of structured reasoning traces — and that the internet already contains billions of these traces that LLMs can extract and structure.
+
+**But what's the representation?** If you mine a Stack Overflow answer, a textbook solution, a forum debate, or an LLM-generated walkthrough, and you want to store the *reasoning strategy* (not just the answer), you need a trace format that captures the actual structure of problem-solving.
+
+### Problem-solving is rarely linear
+
+Real problem-solving traces — the kind you'd mine from text — have:
+
+- **Decision points**: "First check if it's a permutation problem or a combination problem"
+- **Branches**: "If the system is overdetermined, try least-squares; otherwise, solve directly"
+- **Loops**: "Keep adding constraints until the solution is unique"
+- **Dead ends and backtracking**: "I tried dynamic programming but the state space was too large, so I switched to greedy with a proof of correctness"
+- **Conditional steps**: "If the graph is acyclic, topological sort; otherwise, detect cycles first"
+
+Linear trace formats (step 1, step 2, step 3...) flatten this structure and lose exactly the information that makes traces reusable: **when to branch, what to try first, what to do when something fails**.
+
+### Flowcharts are the right representation — and they're solved
+
+Flowchart description languages (Mermaid, Graphviz DOT, BPMN, PlantUML) already handle decisions, branches, loops, parallel paths, and join points. They're a solved problem with mature tooling for storage, rendering, diffing, and querying.
+
+A mined reasoning trace stored as a flowchart captures the **strategy graph**, not just the execution path:
+
+```
+{Permutation or combination?}
+  ├─ permutation → [Check for repetition allowed?]
+  │                  ├─ yes → [Use n^r formula]
+  │                  └─ no  → [Use n!/(n-r)! formula]
+  └─ combination → [Check for repetition allowed?]
+                     ├─ yes → [Stars and bars]
+                     └─ no  → [Use C(n,r) formula]
+```
+
+This isn't just one trace — it's a **family of traces** that covers the decision space. One flowchart replaces many linear traces.
+
+### Why this matters for the reasoning repository (Papers 3-4)
+
+1. **Richer indexing**: a flowchart trace can be indexed by its decision nodes ("what questions does this strategy ask?"), not just by problem type. Retrieval becomes: "find me a strategy that handles the case where X is true but Y is false."
+
+2. **Trace similarity is graph similarity**: comparing two reasoning strategies = graph matching. Well-studied problem. Much more meaningful than sequence alignment on linear traces.
+
+3. **Composability**: strategies from different domains can share subgraphs. "Check if problem has unique solution" is a decision node that appears across combinatorics, linear algebra, constraint satisfaction. Flowchart representation makes this shared structure explicit and reusable.
+
+4. **LLM extraction is natural**: when mining reasoning traces from text, an LLM can be prompted to extract the decision structure, not just the steps. "What decisions did the author make? What alternatives did they consider? What conditions determined each choice?" → flowchart.
+
+### Connection to formulation-graph search
+
+The formulation-graph search (described in Framework direction, below) is already a graph over reasoning states. Flowchart traces from the repository would be *templates* for that search — prior knowledge about which paths tend to work for which problem types. The repository doesn't just store answers; it stores **navigation strategies** for the formulation graph.
+
+---
+
 ## Open questions
 
 - Best representation for FRL: JSON AST vs compact DSL vs multiple IR tiers.
@@ -372,6 +426,7 @@ Nobody has combined these into a unified system for reasoning problems. Our mult
 - How much clarification dialogue is needed for ambiguity, and how to trigger it reliably.
 - Whether ConstraintDETR should replace or augment the AMR-based pre-tokenizer.
 - How formalization fertility relates to existing complexity measures (e.g., problem difficulty ratings, number of reasoning steps).
+- What's the right flowchart description language for storing mined reasoning traces (Mermaid, DOT, BPMN subset, or something more semantic)?
 
 ---
 
