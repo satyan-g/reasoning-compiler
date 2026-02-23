@@ -18,43 +18,7 @@ See `docs/sparks.md` for the full idea log and `docs/plan.md` for execution plan
 
 ## Repository structure
 
-```
-reasoning-compiler/
-├── src/                          # Source modules (all placeholder READMEs, no .py yet)
-│   ├── frl/                      # Formal Reasoning Language: schema, types, canonicalization
-│   ├── compiler/                 # FRL → Z3/SMT-LIB compilation with provenance tracking
-│   ├── runtime/                  # Solver execution, formulation-graph search, ASK step
-│   ├── pretokenizer/             # Multi-view constraint extraction (AMR, NER, classifiers)
-│   ├── nl2frl/                   # NL → FRL translation (rule-based, LLM, seq2seq)
-│   ├── explain/                  # EIR explanation generation + step checker
-│   └── fertility/                # Token counting, fertility metrics, failure correlation
-├── tests/                        # pytest tests (empty — write tests alongside each module)
-├── data/
-│   ├── raw/                      # Downloaded datasets (gitignored)
-│   ├── annotated/                # Manual annotations (committed)
-│   ├── synthetic/                # Generated data (gitignored, reproducible via seed)
-│   └── processed/                # Intermediate artifacts (gitignored)
-├── datagen/                      # Synthetic data generation scripts
-├── scripts/                      # Utility scripts
-├── experiments/
-│   ├── configs/                  # YAML experiment configurations
-│   ├── runners/                  # Experiment execution scripts
-│   └── analysis/                 # Post-hoc analysis notebooks
-├── papers/
-│   ├── fertility/                # Paper 1 drafts and figures
-│   └── verified_reasoning/       # Paper 2 drafts and figures
-├── docs/                         # Design documentation
-│   ├── sparks.md                 # Comprehensive idea log (668 lines — read this first)
-│   ├── plan.md                   # Phased execution plan
-│   ├── project_organization.md   # Repo structure, experiment plans, git workflow
-│   └── workflow_guide.md         # claude.ai ↔ Git ↔ Claude Code bridge
-├── CLAUDE.md                     # This file — AI assistant guidance
-├── DECISIONS.md                  # Technical decisions log
-├── FINDINGS.md                   # Experiment results (empty — to be populated)
-├── README.md                     # Project overview
-├── Makefile                      # Dev commands
-└── pyproject.toml                # Python package config
-```
+Code lives in `src/` with 7 modules: `frl`, `compiler`, `runtime`, `pretokenizer`, `nl2frl`, `explain`, `fertility`. Tests in `tests/`, docs in `docs/`. See `docs/project_organization.md` for the full directory tree and module descriptions.
 
 ## Implementation status
 
