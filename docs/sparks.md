@@ -691,6 +691,18 @@ Over-designing the extractor before having a working end-to-end system. The orig
 
 ---
 
+## The Fertility Spectrum: Extraction vs. Generation (NEW — Feb 2026)
+
+Paper 1 focuses on problems where constraints exist in the NL but get lost (high fertility). There's a qualitatively different class — Fermi estimation, interview puzzles — where constraints don't exist in the text at all. Fertility is effectively infinite: the reasoning IS constraint generation from world knowledge, not extraction. This suggests a "constraint generation" module alongside extraction, where each generated assumption is a constraint with provenance = "assumed, not stated." Sensitivity analysis (re-solve with perturbed assumptions) identifies which assumptions drive the answer — something current LLMs can't do. Phase 3+ extension; not actionable until single-domain pipeline works.
+
+---
+
+## UNSAT Cores as Discrete Gradients (NEW — Feb 2026)
+
+Backprop distributes blame via chain rule over continuous parameters. UNSAT cores distribute blame via minimal infeasible subsets over discrete constraints. Both answer "which earlier decisions caused the bad outcome?" — making UNSAT cores a discrete analogue of gradients. The analogy holds for blame attribution but breaks for repair direction: gradients say how much to change each parameter, while cores only say which constraints conflict, not which one is wrong. Implication: training reasoning models on search episodes with structured failure signals (not just correct traces) could teach backtracking heuristics, with the external verifier remaining source of truth. Theoretical observation for Papers 3-4.
+
+---
+
 ## Research program arc
 
 ```
