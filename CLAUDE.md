@@ -22,35 +22,7 @@ Code lives in `src/` with 7 modules: `frl`, `compiler`, `runtime`, `pretokenizer
 
 ## Implementation status
 
-**Current state**: Project scaffold complete. All documentation written. **No Python code exists yet.** All `src/` modules are directory + README placeholders only.
-
-### Phase 0: Foundation ← CURRENT PHASE
-- [ ] FRL v0 schema (dataclasses for assignment domain)
-- [ ] Z3 compiler (FRL → Z3 constraints with tracking)
-- [ ] Independent verifier (check witness against FRL, no Z3)
-- [ ] Solver runner (compile + solve + extract witness/core)
-- [ ] 5 hand-written FRL examples that solve correctly
-- [ ] Fertility measurement on 50 manually annotated GSM8K problems
-- [ ] Go/no-go: does fertility correlate with LLM failure?
-
-### Phase 1: Data + Baseline
-- [ ] Synthetic puzzle generator (10k problems with ground truth FRL)
-- [ ] LLM baseline: GPT-4/Claude on same problems (CoT, PAL, direct)
-- [ ] Measure fertility on synthetic data
-- [ ] Simple NL→FRL via LLM structured extraction (stub the "compiler")
-
-### Phase 2: Pre-tokenizer + Paper 1
-- [ ] AMR parsing baseline (what does it recover?)
-- [ ] Constraint classifier (DeBERTa on synthetic data)
-- [ ] Full pipeline evaluation vs baselines
-- [ ] Robustness tests (paraphrase, distractor, reorder)
-- [ ] Write and submit Paper 1 / arXiv preprint
-
-### Phase 3: Runtime + Paper 2
-- [ ] Formulation-graph search with backtracking
-- [ ] ASK step (detect underspecification)
-- [ ] EIR explanation generation + checker
-- [ ] Write Paper 2
+**Current phase**: Phase 0 (Foundation). No Python code exists yet — all `src/` modules are directory + README placeholders only. See `docs/plan.md` for full phase details and deliverables.
 
 ## Tech stack and development commands
 
