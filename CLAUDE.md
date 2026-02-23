@@ -24,28 +24,9 @@ Code lives in `src/` with 7 modules: `frl`, `compiler`, `runtime`, `pretokenizer
 
 **Current phase**: Phase 0 (Foundation). No Python code exists yet — all `src/` modules are directory + README placeholders only. See `docs/plan.md` for full phase details and deliverables.
 
-## Tech stack and development commands
+## Tech stack
 
-### Dependencies
-- Python 3.10+
-- z3-solver >= 4.12 (SMT backend)
-- tiktoken >= 0.5 (token counting for fertility)
-- jsonschema >= 4.0 (FRL validation)
-- pytest >= 7.0 (testing, dev dependency)
-- Later: spacy, amrlib, transformers (NLP components)
-- Later: matplotlib, seaborn, pandas, scipy (analysis/figures)
-
-### Setup and commands
-```bash
-make setup          # pip install -e ".[dev]"
-make test           # pytest tests/ -v
-make clean          # remove __pycache__ and .pyc files
-```
-
-### pytest configuration
-- Test paths: `tests/`
-- Default options: `-v --tb=short`
-- Configured in `pyproject.toml` under `[tool.pytest.ini_options]`
+Python 3.10+, z3-solver, tiktoken, jsonschema, pytest. Use `make setup`, `make test`, `make clean`. See `README.md` and `pyproject.toml` for details.
 
 ## Key technical decisions made
 
