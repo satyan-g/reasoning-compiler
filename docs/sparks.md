@@ -733,3 +733,49 @@ Post 4: Faithful explanations from certificates (XAI angle, broader audience)
 arXiv preprint drops after post 2 or 3, tying everything together
 ```
 
+---
+
+## Novelty risk — literature check needed (2026-03-01)
+
+**Concern:** The "compilation framing for LLM reasoning" space is already in silent motion. PAL (Program-Aided Language Models), Parsel, and similar work are adjacent. Need to establish what's genuinely novel before investing heavily in the research timeline.
+
+**Potentially differentiating angles:**
+- Formalization fertility as a *metric* (measuring compilability of NL problems)
+- Domain routing to multiple formal backends (not just Python/code)
+- Full certificate-based verification with provenance-traced explanations
+- The compiler metaphor taken seriously (multi-view analysis, assembler, typed IR)
+
+**Action:** Literature search to map what exists, identify clear water, and sharpen the contribution claims. Results go below.
+
+### Literature search results (2026-03-01)
+
+**Closest competitor: Logic-LM** (Pan et al., 2023, arxiv 2305.12295)
+- Does NL → symbolic formulation (FOL, CSP) → solver (Prover9, Z3) → answer
+- Has a self-refinement loop (solver errors fed back to LLM)
+- Lacks: domain routing, structured pre-tokenization, fertility metric, UNSAT-core repair, certificate explanations
+
+**Other key related work:**
+- **SatLM** (Ye et al., 2023, 2305.09656) — NL → SAT → solver. Propositional only.
+- **PAL** (Gao et al., 2023, 2211.10435) — NL → Python → execute. No verification.
+- **Faithful CoT** (Lyu et al., 2023, 2301.13379) — NL → symbolic (Python/Datalog/PDDL) → deterministic exec. Similar motivation but no certificates/fertility.
+- **OptiMUS** (AhmadiTeshnizi et al., 2024, 2402.10172) — NL → LP/MIP → Gurobi. Single formal backend.
+- **LINC** (Olausson et al., 2023, 2310.15164) — NL → FOL → Prover9/Mace4. Narrow (entailment only).
+- **ToRA** (Gou et al., 2024, 2309.17452) — Interleaves reasoning + tool calls (Python, sympy).
+- **Parsel** (Zelikman et al., 2023, 2212.10561) — Hierarchical program synthesis, not formal reasoning.
+- **NL4Opt** (2022) — NL → optimization. Competition track.
+
+**What's genuinely novel (clear water):**
+1. Formalization fertility as a predictive metric — NOBODY has this
+2. Constraint pre-tokenization as structured extraction before formalization
+3. Domain routing as discrete latent variable with verification-guided backtracking
+4. Certificate-based faithful explanations (EIR) with provenance tracking
+5. Multi-view semantic assembly (compiler-style independent analyses)
+
+**Gray zone (partially explored, our angle is fresher):**
+- Compile-check-repair with UNSAT cores (vs Logic-LM's raw error feedback)
+- Full end-to-end pipeline completeness
+
+**Verdict:** Green light. Fertility + pre-tokenization are unoccupied. Differentiate carefully vs Logic-LM.
+
+**TODO:** Search AAAI/ICLR/ACL 2025 proceedings and late-2025 arxiv for "formalizability metric", "NL2SMT", "compilability reasoning" to verify no scooping.
+
