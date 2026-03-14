@@ -44,4 +44,20 @@ A running log of technical decisions. Add an entry whenever a non-obvious choice
 
 ---
 
+## 2026-03-14: Fertility paper (Paper 1) on hold
+
+**Context**: Frontier reasoning models (Opus 4.6, Sonnet 4.6) have made significant progress on constraint-heavy reasoning. The original Paper 1 thesis — that LLMs fail on high-fertility problems and a metric can predict this — may no longer hold for frontier models. Viability check 1 tested mid-tier models (Llama 70B, Gemini Flash) but not the current frontier.
+
+**Decision**: Pause Paper 1 work. Before resuming, run the viability check problems against frontier models. If they solve 90%+, the fertility-as-diagnostic framing is dead and needs rethinking.
+
+**Surviving angles if frontier models ace it:**
+- Cost/efficiency: compiled formalization + solver may be 20x cheaper in tokens than LLM chain-of-thought
+- Verifiability: LLM answers have no certificate; formal pipeline produces mathematical proofs
+- Robustness: formal pipeline should be invariant to paraphrase/distractors (LLMs may not be)
+- Democratization: make small models (Llama 8B) solve problems that currently require Opus
+
+**What to explore instead:** The reasoning compiler vision — compiling constraint formalization into model weights (see spark: "Compile a reasoning compiler into LLM weights" in docs/sparks.md). Inspired by Percepta's weight compilation approach, but targeting the encoding layer rather than execution.
+
+---
+
 _(Add new decisions below this line)_

@@ -779,3 +779,180 @@ arXiv preprint drops after post 2 or 3, tying everything together
 
 **TODO:** Search AAAI/ICLR/ACL 2025 proceedings and late-2025 arxiv for "formalizability metric", "NL2SMT", "compilability reasoning" to verify no scooping.
 
+---
+
+## Percepta: "Can LLMs Be Computers?" — positioning note (2026-03-14)
+
+**Source:** [percepta.ai/blog/can-llms-be-computers](https://www.percepta.ai/blog/can-llms-be-computers) (Christos Tzamos et al., Mar 11, 2026)
+
+**What they do:** Build a computer inside a transformer. Compile C → WebAssembly → tokens, then execute the program within the transformer's own inference loop (no external tool call). Key technical unlock: restrict attention heads to 2D, which turns KV lookup into a convex-hull query answerable in O(log t) instead of O(t). Demos: Hungarian algorithm (300K tokens, 33K tok/s), Arto Inkala Sudoku (3.5M tokens, solved in ~3 min). 100% accuracy on Sudoku benchmarks.
+
+**Same diagnosis, different layer:**
+- Both projects start from "LLMs fail at structured reasoning"
+- Percepta targets the **execution** bottleneck (can't run algorithms reliably)
+- We target the **encoding** bottleneck (can't extract constraints from NL)
+- Their demos all start with already-formalized inputs (cost matrices, Sudoku grids) — the NL→formal gap is untouched
+
+**Why this is NOT a threat to Paper 1:**
+- They don't address fertility, NL-to-formal compilation, or constraint pre-tokenization
+- Even with a perfect in-model executor, you still need to correctly translate "Alice can't weld" into constraints — that's our problem
+- Our work is upstream: encoding must happen before execution
+
+**Why this STRENGTHENS our motivation:**
+- If execution is solvable (Percepta shows it is), then encoding becomes the clearly remaining hard problem
+- Their correctness guarantee ("if compiled solver is correct, execution is correct") still requires correct problem formulation — which is exactly what fertility measures
+- Paper 1 can cite this as evidence that the execution layer is increasingly solved, sharpening focus on the encoding layer
+
+**Philosophical tension worth noting in Paper 2 / related work:**
+- Percepta internalizes computation into the transformer; we externalize it to a verified solver
+- They claim correctness via compiler correctness; we claim it via mathematical certificates
+- Open question: which is more robust under distribution shift or adversarial NL inputs? (Our approach has the advantage of independent verification — the certificate doesn't depend on the model being right)
+
+**Potential future integration (speculative, post-Paper 2):**
+- NL → pre-tokenizer → FRL → compiled WASM → in-model execution via Percepta-style executor
+- Would eliminate the external solver dependency while keeping the encoding/verification story
+- Only worth exploring if their 2D-head models can be trained at scale
+
+---
+
+## Spark: Compile a reasoning compiler into LLM weights (2026-03-14)
+
+**Triggered by:** Percepta's "compile programs into weights" vision applied to our core problem.
+
+**The insight:** Percepta compiled an *interpreter* (executor) into transformer weights. We don't need an in-model solver — external solvers (Z3, Gurobi) are better at that and always will be. What we need is an in-model *compiler*: the ability to reliably translate NL into correct formal constraint representations (FRL). That's the encoding gap. That's what fertility measures. That's literally the name of this repo.
+
+**The one-liner:** Percepta coded for a virtual WebAssembly machine that executes inside the transformer. We want to code for a virtual FRL machine that dispatches to external solvers. Same pattern — make the model natively speak a formal language — different target machine.
+
+| | Percepta | Reasoning Compiler |
+|---|---|---|
+| **Virtual machine** | WebAssembly interpreter | FRL execution engine |
+| **Instruction set** | WASM opcodes | FRL constraints, queries, trace responses |
+| **Where it runs** | Inside the transformer | Delegated to external solvers |
+| **What's compiled into weights** | The interpreter | The compiler (NL → FRL) |
+| **Traces** | Model generates execution tokens | Model reads solver results in FRL |
+
+**The reframe:**
+- Percepta: compile an interpreter into weights → model can execute programs
+- Us: compile a *compiler* into weights → model can formalize reasoning
+- Both use the same mechanism (structured behavior baked into weights) for different purposes
+- We keep external solvers for execution (they're better), but the NL→FRL step becomes reliable because it's compiled in, not prompted for
+
+**Three-stage architecture:** Formulation, Planning, and Execution are separate concerns.
+
+### Stage 1: FORMULATE — NL → FRL (where weight compilation applies)
+
+Faithful translation of natural language into formal representation. Capture all entities, constraints, relationships, implicit assumptions. Zero information loss is the goal. Fertility measures how hard this step is. This is where "compile into weights" helps — make the LLM natively produce correct FRL.
+
+```
+Today:     NL → [LLM + prayer] → FRL
+Goal:      NL → [LLM with compiled formalization] → FRL
+```
+
+**What gets compiled (deterministic, rule-based):**
+- Quantifier phrases → operators ("no more than" → ≤, "at least" → ≥, "exactly one" → =1)
+- Negation patterns → FORBID ("cannot", "must not", "prohibited from")
+- Uniqueness patterns → AllDifferent ("each", "no two", "exactly one of")
+- Numeric extraction ("three" → 3, "a dozen" → 12)
+
+**What gets trained (fuzzy, context-dependent):**
+- Entity typing (is "welding" a task or a skill? depends on the domain)
+- Pragmatic constraint inference ("morning is too early for Bob" → FORBID(assign(Bob, morning)))
+- Ambiguity resolution (inclusive vs exclusive "or")
+
+**The hybrid: compiled + learned in one module.**
+Deterministic parts are constructed directly into weights (correct by construction, no training needed). Fuzzy parts are learned via training on the base LLM's representations. This is "firmware + software" in a single neural module.
+
+### Stage 2: PLAN — FRL → execution flowchart
+
+Given the FRL, the LLM reasons about *how* to solve it. Decompose into subproblems? Solve directly? Relax and tighten? This is macro-level strategy — the flowchart, not the execution. This stage stays as LLM reasoning (not compiled) because it's inherently dynamic and problem-dependent.
+
+### Stage 3: EXECUTE — run solvers, feed FRL traces back to LLM
+
+The LLM issues solver calls and receives results. Critically: **traces are returned TO the LLM, not generated BY the LLM** (unlike Percepta where traces are inside the model). And traces are expressed in FRL — the same formal language the LLM used to formulate — so there's no lossy translation.
+
+```
+LLM                                    External Solvers
+ │                                          │
+ │──── FRL (subproblem A) ────────────────►│
+ │                                          │── Z3 solves
+ │◄─── FRL trace (UNSAT, core={c3,c7}) ───│
+ │                                          │
+ │ reads trace in FRL, decides: relax c3    │
+ │                                          │
+ │──── FRL (subproblem A', c3 relaxed) ───►│
+ │                                          │── Z3 solves
+ │◄─── FRL trace (SAT, witness={...}) ────│
+ │                                          │
+ │ reads trace, moves to subproblem B       │
+```
+
+**Why FRL as the trace language matters:**
+- LLM formulated in FRL, so it reads results in the same notation — no translation loss
+- UNSAT cores reference FRL constraint IDs — model knows exactly which constraints conflict
+- Witnesses map to FRL variables — model can verify partial solutions against remaining constraints
+- The feedback loop stays formal, avoiding a lossy NL round-trip
+
+**Key contrast with Percepta:** They generate execution traces inside the model (model as executor). We receive solver traces from outside (model as controller). The LLM never executes — it reads, decides, and dispatches. External solvers do the heavy lifting.
+
+### Full architecture sketch:
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Base LLM (frozen, any version)                      │
+│  ...transformer layers...                            │
+│  final hidden states                                 │
+└─────────┬────────────────────────────────────────────┘
+          │ read-only
+┌─────────▼────────────────────────────────────────────┐
+│  Reasoning compiler module (yours, small, portable)  │
+│  - compiled: quantifier norm, negation, numerics     │
+│  - learned: entity typing, relation classification   │
+│  Output: FRL                                         │
+└─────────┬────────────────────────────────────────────┘
+          │ FRL
+          ▼
+┌──────────────────────────────────────────────────────┐
+│  LLM as controller                                   │
+│  - reads FRL                                         │
+│  - plans execution strategy (flowchart)              │
+│  - dispatches subproblems to solvers                 │
+│  - reads FRL traces back from solvers                │
+│  - decides next step (continue / backtrack / done)   │
+└─────┬──────────────────────────────────▲─────────────┘
+      │ FRL subproblem                   │ FRL trace
+      ▼                                 │
+┌─────────────────────────────────────────┐
+│  External solvers (Z3, Gurobi, etc.)    │
+│  - solve                                │
+│  - return witness or UNSAT core in FRL  │
+│  - return certificates                  │
+└─────────────────────────────────────────┘
+```
+
+### Portability
+
+**Can the reasoning compiler module survive base model upgrades?**
+
+LoRA modifies internal weights — deltas break when the base changes. Better: add layers on top, don't modify existing ones. Freeze the base LLM, add your own trainable + compiled layers that read from its representations.
+
+**Why this is more portable:**
+- Final-layer representations are more stable across versions (anchored by same pretraining objective)
+- You're reading from representations, not modifying them
+- Retraining cost on new base: quick fine-tune of learned parts; compiled parts don't change
+
+**Candidate architectures (most to least separable):**
+1. **Adapter heads** — task-specific decoders on final hidden states, output FRL directly
+2. **Side-tuning** (Zhang et al., 2020) — parallel side network, completely decoupled
+3. **Cross-attention layers** (Perceiver-style) — cross-attend to frozen model's hidden states
+4. **LLaMA-Adapter** (Zhang et al., 2023) — learned prompts prepended to top K layers
+
+**Testable hypothesis:** Train a constraint formalization adapter on Llama 3 70B, evaluate on Llama 3.1/3.2/3.3 without retraining. If FRL extraction accuracy stays within 5%, portability is viable.
+
+### Why this matters
+
+If you can compile a reasoning compiler into portable weight modules, you ship a capability that rides the frontier. As base models improve at language understanding, your compiled formalization gets better inputs for free. This is "linking" for neural networks — compiled libraries that survive model upgrades.
+
+**Timeline:** Post-Paper 1. Could be standalone investigation or Paper 3 direction.
+
+**Related work to check:** Percepta (weight compilation), model stitching, representation similarity (CKA, SVCCA), adapter portability, LLaMA-Adapter, side-tuning.
+
