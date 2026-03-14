@@ -1,0 +1,91 @@
+# Viability Check Experiment 1
+# Test whether reasoning models can solve high-fertility constraint problems
+# Decision: If models fail on 30%+ → proceed with Paper 1
+#           If models solve 90%+ → pivot to verification/efficiency story
+
+experiment:
+  name: "viability-check-1"
+  date: "2026-02-22"
+  description: |
+    Test 20 hard constraint-heavy problems against current reasoning models
+    to determine if the fertility diagnostic paper is still viable.
+
+  research_question: |
+    Do current reasoning models (Claude Sonnet 3.5, GPT-4o, Gemini) still fail
+    on high-fertility constraint problems, or has the frontier moved past the
+    diagnostic value of Paper 1?
+
+problem_selection:
+  count: 20
+  categories:
+    - name: "logic_grids"
+      count: 8
+      description: "Multi-constraint logic puzzles (8+ constraints, implicit uniqueness)"
+
+    - name: "optimization"
+      count: 6
+      description: "NL4Opt-style optimization problems with implicit constraints"
+
+    - name: "folio_edge_cases"
+      count: 6
+      description: "FOLIO reasoning with ambiguous quantifiers, underspecification"
+
+models_to_test:
+  - name: "llama-3.3-70b-versatile"
+    provider: "groq"
+    notes: "Llama 3.3 70B - free tier on Groq, best reasoning capabilities"
+
+  - name: "llama-3.1-8b-instant"
+    provider: "groq"
+    notes: "Llama 3.1 8B - free tier on Groq, fast baseline"
+
+  - name: "gemini-2.5-flash"
+    provider: "google"
+    notes: "Gemini 2.5 Flash - free tier, newest model"
+
+  - name: "gemini-2.0-flash"
+    provider: "google"
+    notes: "Gemini 2.0 Flash - free tier, stable"
+
+metrics:
+  accuracy:
+    description: "Percentage of correct answers"
+    threshold_viable: "<70%"  # If models score <70%, paper is viable
+    threshold_pivot: ">90%"   # If models score >90%, pivot needed
+
+  confidence:
+    description: "Does model express uncertainty when wrong?"
+    measure: "Compare confidence scores on correct vs incorrect answers"
+
+  token_cost:
+    description: "Tokens spent on correct answers"
+    measure: "Average input + output tokens for successful solutions"
+
+  failure_modes:
+    description: "Categorize types of failures"
+    categories:
+      - "wrong_answer_confident"
+      - "wrong_answer_uncertain"
+      - "requests_clarification"
+      - "partial_solution"
+      - "correct_answer"
+
+decision_criteria:
+  proceed_paper_1:
+    condition: "accuracy < 70%"
+    action: "Continue with fertility diagnostic paper as planned"
+
+  pivot_verification:
+    condition: "accuracy > 90% AND no confidence calibration"
+    action: "Skip to Paper 2: verification/certification story"
+
+  pivot_efficiency:
+    condition: "accuracy > 90% AND high token costs"
+    action: "Reframe Paper 1 around efficiency/token prediction"
+
+outputs:
+  problem_set: "experiments/viability_check_1/problems.jsonl"
+  raw_responses: "experiments/viability_check_1/responses/"
+  analysis: "experiments/viability_check_1/analysis.json"
+  summary: "experiments/viability_check_1/SUMMARY.md"
+  decision: "experiments/viability_check_1/DECISION.md"

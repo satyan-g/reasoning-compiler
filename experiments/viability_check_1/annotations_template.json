@@ -1,0 +1,1229 @@
+{
+  "instructions": "For each problem-model pair, provide:\n- is_correct: true/false\n- expresses_uncertainty: true/false (did model signal uncertainty?)\n- failure_mode: one of [correct, wrong_confident, wrong_uncertain, requests_clarification, partial]\n- notes: any observations\n\nSome problems have deliberately incorrect ground truth to test verification.\nCheck the problem notes.",
+  "problems": {
+    "lg_01_llama-3.1-8b-instant": {
+      "problem_id": "lg_01",
+      "model": "llama-3.1-8b-instant",
+      "category": "logic_grids",
+      "problem_text": "Five people (Alice, Bob, Carol, Dave, Eve) each own exactly one pet (cat, dog, bird, fish, hamster)\nand live in houses of different colors (red, blue, green, yellow, white). Given:\n1. Alice does not live in the red house\n2. The person in the blue house owns a dog\n3. Carol owns a bird\n4. Dave lives in the green house\n5. The person with the fish lives in the yellow house\n6. Eve does not own the cat\n7. Bob does not live in the white house\n8. The person in the red house owns a hamster\n9. Alice does not own a dog\n\nWho lives in which colored house and owns which pet?",
+      "response_text": "Let's break down the problem step by step:\n\n**Step 1: Analyze the given information**\n\nFrom the given information:\n\n- Alice does not live in the red house (1)\n- The person in the blue house owns a dog (2)\n- Carol owns a bird (3)\n- Dave lives in the green house (4)\n- The person with the fish lives in the yellow house (5)\n- Eve does not own the cat (6)\n- Bob does not live in the white house (7)\n- The person in the red house owns a hamster (8)\n- Alice does not own a dog (9)\n\n**Step 2: Eliminate pos...",
+      "ground_truth": {
+        "Alice": {
+          "house": "white",
+          "pet": "fish"
+        },
+        "Bob": {
+          "house": "red",
+          "pet": "hamster"
+        },
+        "Carol": {
+          "house": "blue",
+          "pet": "bird"
+        },
+        "Dave": {
+          "house": "green",
+          "pet": "cat"
+        },
+        "Eve": {
+          "house": "yellow",
+          "pet": "fish"
+        }
+      },
+      "problem_notes": "Multiple constraints interact, requires systematic deduction",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_02_llama-3.1-8b-instant": {
+      "problem_id": "lg_02",
+      "model": "llama-3.1-8b-instant",
+      "category": "logic_grids",
+      "problem_text": "Four students (John, Mary, Sam, Lisa) take four different subjects (Math, English, Science, History).\nEach gets a different grade (A, B, C, D). Given:\n1. John did not get an A\n2. The student who got an A in Math is not Mary\n3. Sam got a B\n4. Lisa took Science\n5. The student who took English got a C\n6. John took History\n7. The student who took Math did not get a D\n8. Mary did not take English\n\nWhat grade did each student get in which subject?",
+      "response_text": "To solve this problem, we can use a step-by-step approach by analyzing the given conditions and deducing the grade for each subject.\n\n**Step 1:**\nFrom condition 3, we know Sam got a B. We don't know which subject yet, but we'll remember this for later.\n\n**Step 2:**\nFrom condition 5, we know the student who took English got a C. We also know from condition 8 that Mary did not take English. This means Mary must have taken one of the other three subjects: Math, Science, or History.\n\n**Step 3:**\nFro...",
+      "ground_truth": {
+        "John": {
+          "subject": "History",
+          "grade": "D"
+        },
+        "Mary": {
+          "subject": "Math",
+          "grade": "A"
+        },
+        "Sam": {
+          "subject": "English",
+          "grade": "B"
+        },
+        "Lisa": {
+          "subject": "Science",
+          "grade": "C"
+        }
+      },
+      "problem_notes": "Ground truth has an error to test verification",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_03_llama-3.1-8b-instant": {
+      "problem_id": "lg_03",
+      "model": "llama-3.1-8b-instant",
+      "category": "logic_grids",
+      "problem_text": "Six people sit in a row at a conference (seats 1-6, left to right).\nThe people are: Anna, Ben, Claire, Dan, Emma, Frank.\n1. Anna sits immediately to the left of Ben\n2. Claire sits in seat 3\n3. Dan does not sit in seat 1 or seat 6\n4. Emma sits exactly two seats away from Frank\n5. Ben does not sit in seat 5\n6. Frank sits somewhere to the right of Anna\n7. Dan sits immediately to the right of Emma\n\nWhat is the seating arrangement from left to right?",
+      "response_text": "To solve this problem, let's break it down step by step.\n\n**Step 1:**\nFrom rule 2, Claire sits in seat 3. We will keep this in mind for now.\n\n**Step 2:**\nFrom rule 1, Anna sits immediately to the left of Ben.\n\nSo far, we have:\nSeat 1: Anna\nSeat 2: Ben\n\n**Step 3:**\nFrom rule 3, Dan does not sit in seat 1 or seat 6.\n\nSince Claire is in seat 3, and Anna and Ben are in seats 1 and 2, Dan's possible seats are 4 or 5, but only if we consider Emma and Frank's seats. We'll keep this in mind for now.\n\n**...",
+      "ground_truth": "Emma, Dan, Claire, Anna, Ben, Frank",
+      "problem_notes": "Spatial constraints with implicit ordering",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_04_llama-3.1-8b-instant": {
+      "problem_id": "lg_04",
+      "model": "llama-3.1-8b-instant",
+      "category": "logic_grids",
+      "problem_text": "A chef prepares 5 dishes (appetizer, soup, salad, main, dessert) using 5 ingredients\nas the primary component (chicken, beef, fish, vegetables, fruit). Each dish takes\na different amount of time (15, 30, 45, 60, 90 minutes).\n1. The soup takes 30 minutes\n2. The dish with chicken is not the appetizer\n3. The main course takes 60 minutes\n4. The fish dish takes longer than the vegetable dish\n5. The dessert uses fruit\n6. The salad takes 15 minutes\n7. The beef dish takes 90 minutes\n8. The appetizer does not use vegetables\n9. The soup uses chicken\n\nWhich ingredient is used in which dish, and how long does each take?",
+      "response_text": "To solve this problem, we'll use the given information to deduce the ingredient and time for each dish.\n\n**Step 1: Identify the soup's ingredient**\nFrom statement 9, the soup uses chicken. \nFrom statement 1, the soup takes 30 minutes.\n\n**Step 2: Identify the appetizer's ingredient and time**\nFrom statement 8, the appetizer does not use vegetables.\nFrom statement 2, the dish with chicken is not the appetizer.\nThis means the appetizer cannot use chicken.\nFrom statement 6, the salad takes 15 minute...",
+      "ground_truth": {
+        "appetizer": {
+          "ingredient": "fish",
+          "time": 45
+        },
+        "soup": {
+          "ingredient": "chicken",
+          "time": 30
+        },
+        "salad": {
+          "ingredient": "vegetables",
+          "time": 15
+        },
+        "main": {
+          "ingredient": "beef",
+          "time": 90
+        },
+        "dessert": {
+          "ingredient": "fruit",
+          "time": 60
+        }
+      },
+      "problem_notes": "Constraint conflict in ground truth - tests detection",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_05_llama-3.1-8b-instant": {
+      "problem_id": "lg_05",
+      "model": "llama-3.1-8b-instant",
+      "category": "logic_grids",
+      "problem_text": "Four friends go shopping and each buys exactly one item from a different store.\nFriends: Amy, Brad, Cathy, Derek\nStores: Bookstore, Electronics, Clothing, Grocery\nItems: Novel, Headphones, Jacket, Cheese\nPrices: $10, $15, $25, $40\n1. Amy spent $25\n2. The item from the Bookstore cost $10\n3. Brad bought headphones\n4. The jacket cost more than the cheese\n5. Cathy shopped at the Grocery store\n6. The item from Electronics cost $40\n7. Derek did not buy the novel\n8. The cheese cost $15\n9. The item from Clothing was not $10\n\nWho bought what from which store for how much?",
+      "response_text": "To solve this problem, let's use a step-by-step approach.\n\n**Step 1: Analyzing the information given**\nFrom the problem statement, we have the following key points:\n\n- Amy spent $25\n- The item from the Bookstore costs $10\n- Brad bought headphones\n- The jacket costs more than the cheese\n- Cathy shopped at the Grocery store\n- The item from Electronics costs $40\n- Derek did not buy the novel\n- The cheese cost $15\n- The item from Clothing was not $10\n\n**Step 2: Finding the item from the Bookstore**\n...",
+      "ground_truth": {
+        "Amy": {
+          "store": "Clothing",
+          "item": "Jacket",
+          "price": 25
+        },
+        "Brad": {
+          "store": "Electronics",
+          "item": "Headphones",
+          "price": 40
+        },
+        "Cathy": {
+          "store": "Grocery",
+          "item": "Cheese",
+          "price": 15
+        },
+        "Derek": {
+          "store": "Bookstore",
+          "item": "Novel",
+          "price": 10
+        }
+      },
+      "problem_notes": "Ground truth violates constraint - tests verification",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_06_llama-3.1-8b-instant": {
+      "problem_id": "lg_06",
+      "model": "llama-3.1-8b-instant",
+      "category": "logic_grids",
+      "problem_text": "A tournament has 5 teams (Red, Blue, Green, Yellow, Orange) competing.\nEach team has a captain, a different uniform number (1, 2, 3, 4, 5), and scores\na different number of points (10, 15, 20, 25, 30).\n1. The Red team scored 20 points\n2. Team #3 is captained by Sam\n3. The Blue team's captain is Alex\n4. The team that scored 30 points wears #1\n5. Jordan captains the Green team\n6. The Yellow team did not score 10 points\n7. Team #5 scored 15 points\n8. Morgan does not captain the Orange team\n9. The team that scored 10 points is not #2\n\nFind the complete assignments: team, captain, number, points.",
+      "response_text": "Let's solve the problem step by step.\n\n**Step 1: Identify the given information and create a table to track the assignments**\n\n| Team | Captain | Number | Points |\n| --- | --- | --- | --- |\n| Red |  |  | 20 |\n| Blue | Alex |  |  |\n| Green | Jordan |  |  |\n| Yellow |  |  |  |\n| Orange |  |  |  |\n\n**Step 2: Analyze the given information and start making assignments**\n\nFrom point 1: The Red team scored 20 points.\nFrom point 4: The team that scored 30 points wears #1.\nFrom point 8: Morgan does not c...",
+      "ground_truth": "Underspecified - multiple valid solutions exist",
+      "problem_notes": "Deliberately underspecified - should detect this",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_07_llama-3.1-8b-instant": {
+      "problem_id": "lg_07",
+      "model": "llama-3.1-8b-instant",
+      "category": "logic_grids",
+      "problem_text": "Five houses in a row (numbered 1-5, left to right) are painted different colors\nand have different types of gardens.\nColors: Red, Blue, Green, Yellow, White\nGardens: Rose, Tulip, Daisy, Sunflower, Orchid\n1. The Blue house is immediately to the left of the Green house\n2. House #3 has a Rose garden\n3. The Red house is not at either end\n4. The house with Tulips is two positions to the right of the White house\n5. The Yellow house has a Sunflower garden\n6. House #1 is not Blue\n7. The house with Orchids is next to the Green house\n8. The Red house has a Daisy garden\n9. House #5 is not Yellow\n\nWhat color is each house and what garden does it have?",
+      "response_text": "**Step 1: Understand the given information**\n\nWe have 9 conditions to satisfy:\n\n1. Blue is to the left of Green\n2. House #3 has a Rose garden\n3. The Red house is not at either end\n4. The Tulip house is two positions to the right of the White house\n5. The Yellow house has a Sunflower garden\n6. House #1 is not Blue\n7. The Orchid house is next to the Green house\n8. The Red house has a Daisy garden\n9. House #5 is not Yellow\n\n**Step 2: Use condition 2 to place the Rose garden**\n\nHouse #3 has a Rose g...",
+      "ground_truth": {
+        "1": {
+          "color": "White",
+          "garden": "Orchid"
+        },
+        "2": {
+          "color": "Blue",
+          "garden": "Sunflower"
+        },
+        "3": {
+          "color": "Green",
+          "garden": "Rose"
+        },
+        "4": {
+          "color": "Yellow",
+          "garden": "Tulip"
+        },
+        "5": {
+          "color": "Red",
+          "garden": "Daisy"
+        }
+      },
+      "problem_notes": "Ground truth has constraint violation",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_08_llama-3.1-8b-instant": {
+      "problem_id": "lg_08",
+      "model": "llama-3.1-8b-instant",
+      "category": "logic_grids",
+      "problem_text": "Six people (Alice, Bob, Carol, Dan, Eve, Frank) work in different departments\n(Sales, Marketing, IT, HR, Finance, Operations) and have different years of\nexperience (1, 3, 5, 7, 10, 15).\n1. Alice has more experience than Bob\n2. The person in IT has 7 years of experience\n3. Carol works in Marketing\n4. The person with 15 years is in Finance\n5. Dan has 5 years of experience\n6. Eve is not in Sales\n7. The person in HR has less than 5 years of experience\n8. Frank has more experience than Carol\n9. Bob is in Operations\n10. The person in Sales has 10 years of experience\n\nWho works in which department with how many years of experience?",
+      "response_text": "To solve this problem, we will follow a step-by-step approach and use the given information to deduce the correct arrangement of people and their departments along with years of experience.\n\n**Step 1: Identify the person with 15 years of experience**\nFrom statement 4, we know the person with 15 years of experience is in Finance. Let's denote this person as 'F' (Finance).\n\n**Step 2: Identify the person in IT**\nFrom statement 2, we know the person in IT has 7 years of experience. We will denote th...",
+      "ground_truth": {
+        "Alice": {
+          "dept": "Sales",
+          "years": 10
+        },
+        "Bob": {
+          "dept": "Operations",
+          "years": 3
+        },
+        "Carol": {
+          "dept": "Marketing",
+          "years": 1
+        },
+        "Dan": {
+          "dept": "IT",
+          "years": 5
+        },
+        "Eve": {
+          "dept": "HR",
+          "years": 7
+        },
+        "Frank": {
+          "dept": "Finance",
+          "years": 15
+        }
+      },
+      "problem_notes": "Multiple constraint violations in ground truth",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_01_llama-3.1-8b-instant": {
+      "problem_id": "opt_01",
+      "model": "llama-3.1-8b-instant",
+      "category": "optimization",
+      "problem_text": "A bakery makes three types of bread: white, wheat, and rye. Each loaf of white bread\nrequires 2 cups of flour and 1 hour of oven time. Each loaf of wheat bread requires\n3 cups of flour and 1.5 hours of oven time. Each loaf of rye bread requires 2.5 cups\nof flour and 2 hours of oven time. The bakery has 100 cups of flour and 40 hours of\noven time available per day. White bread sells for $3, wheat for $4, and rye for $5.\n\nHow many loaves of each type should the bakery make to maximize revenue?",
+      "response_text": "To solve this problem, we will use linear programming. The goal is to maximize the revenue while satisfying the constraints on flour and oven time.\n\n**Step 1: Define the variables**\n\nLet's define the variables:\n\n- W: Number of loaves of white bread to make\n- T: Number of loaves of wheat bread to make\n- R: Number of loaves of rye bread to make\n\n**Step 2: Define the objective function**\n\nThe objective function is to maximize the revenue. Each loaf of white bread sells for $3, wheat for $4, and rye...",
+      "ground_truth": {
+        "white": 0,
+        "wheat": 0,
+        "rye": 20,
+        "max_revenue": 100
+      },
+      "problem_notes": "Standard LP, tests basic optimization reasoning",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_02_llama-3.1-8b-instant": {
+      "problem_id": "opt_02",
+      "model": "llama-3.1-8b-instant",
+      "category": "optimization",
+      "problem_text": "A company needs to ship packages from 2 warehouses to 3 stores.\nWarehouse A has 50 packages, Warehouse B has 70 packages.\nStore 1 needs at least 30 packages, Store 2 needs at least 40, Store 3 needs at least 35.\nShipping costs ($ per package):\n- A to 1: $2, A to 2: $3, A to 3: $4\n- B to 1: $3, B to 2: $2, B to 3: $1\n\nWhat is the minimum cost shipping plan?",
+      "response_text": "**Step 1: Sort the stores by their package requirements in descending order**\n\n| Store | Requirement |\n| --- | --- |\n| Store 2 | 40 |\n| Store 1 | 30 |\n| Store 3 | 35 |\n\n**Step 2: Assign packages from Warehouse B to Store 2 first**\n\nSince Warehouse B has 70 packages and Store 2 needs 40, we assign all 40 packages from Warehouse B to Store 2.\n\nRemaining packages at Warehouse B: 70 - 40 = 30\nRemaining requirement for Store 2: 40 - 40 = 0\nRemaining requirement for Store 1: 30 - 0 = 30\nRemaining requ...",
+      "ground_truth": {
+        "A_to_1": 30,
+        "A_to_2": 20,
+        "A_to_3": 0,
+        "B_to_1": 0,
+        "B_to_2": 20,
+        "B_to_3": 35,
+        "min_cost": 175
+      },
+      "problem_notes": "Transportation problem with constraint violation",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_03_llama-3.1-8b-instant": {
+      "problem_id": "opt_03",
+      "model": "llama-3.1-8b-instant",
+      "category": "optimization",
+      "problem_text": "A farmer has 100 acres of land and wants to plant corn and soybeans.\nCorn requires 1 acre and 2 labor-hours per unit, yields $200 profit.\nSoybeans require 1 acre and 1 labor-hour per unit, yields $150 profit.\nThe farmer has 150 labor-hours available.\nAdditionally, the farmer must plant at least 20 acres of corn to meet a contract.\n\nHow many acres of each crop should be planted to maximize profit?",
+      "response_text": "To solve this problem, we will use linear programming, a method to optimize a linear objective function, subject to a set of linear constraints.\n\n**Step 1: Define the variables**\n\nLet x be the number of acres of corn planted, and y be the number of acres of soybeans planted.\n\n**Step 2: Define the objective function**\n\nThe objective is to maximize profit. The profit from corn is $200x and the profit from soybeans is $150y. Therefore, the objective function is:\n\nMaximize: P = 200x + 150y\n\n**Step 3...",
+      "ground_truth": {
+        "corn": 50,
+        "soybeans": 50,
+        "max_profit": 17500
+      },
+      "problem_notes": "LP with lower bound constraint",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_04_llama-3.1-8b-instant": {
+      "problem_id": "opt_04",
+      "model": "llama-3.1-8b-instant",
+      "category": "optimization",
+      "problem_text": "A factory produces two products, A and B. Each unit of A requires 2 hours on Machine 1\nand 3 hours on Machine 2. Each unit of B requires 4 hours on Machine 1 and 2 hours on\nMachine 2. Machine 1 is available for 40 hours per week, Machine 2 for 36 hours per week.\nProduct A yields $30 profit, Product B yields $40 profit.\nThe factory must produce at least 5 units total per week.\n\nHow many units of each product should be made to maximize weekly profit?",
+      "response_text": "**Step 1: Define the variables**\n\nLet's define two variables:\n\n- x = Number of units of Product A to be produced\n- y = Number of units of Product B to be produced\n\n**Step 2: Define the objective function**\n\nThe objective function represents the total profit. The profit from Product A is $30 per unit, and the profit from Product B is $40 per unit. Therefore, the total profit can be represented as:\n\nMaximize: 30x + 40y\n\n**Step 3: Define the constraints**\n\nThere are several constraints in this prob...",
+      "ground_truth": "Underspecified - multiple optimal solutions",
+      "problem_notes": "Tests whether model finds optimal solution uniqueness",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_05_llama-3.1-8b-instant": {
+      "problem_id": "opt_05",
+      "model": "llama-3.1-8b-instant",
+      "category": "optimization",
+      "problem_text": "A pharmaceutical company makes three drugs: X, Y, and Z.\nDrug X requires 3 mg of ingredient A and 2 mg of ingredient B per pill, sells for $5.\nDrug Y requires 2 mg of A and 4 mg of B per pill, sells for $6.\nDrug Z requires 1 mg of A and 1 mg of B per pill, sells for $3.\nThe company has 1000 mg of A and 1200 mg of B available.\nDue to regulations, they must produce at least 50 pills of drug X.\nThey cannot produce more than 200 pills of any single drug.\n\nHow many pills of each should be produced to maximize revenue?",
+      "response_text": "To solve this problem, we need to maximize revenue while adhering to the given constraints. \n\nStep 1: Define the decision variables\nLet's denote the number of pills produced for each drug as X, Y, and Z.\n\nStep 2: Formulate the objective function (maximize revenue)\nThe revenue from each pill is $5, $6, and $3 for drugs X, Y, and Z, respectively. Therefore, the total revenue function can be defined as:\nRevenue = 5X + 6Y + 3Z\n\nStep 3: Define the constraints\nWe have the following constraints:\n- The ...",
+      "ground_truth": {
+        "X": 50,
+        "Y": 200,
+        "Z": 200,
+        "max_revenue": 1850
+      },
+      "problem_notes": "LP with both lower and upper bounds",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_06_llama-3.1-8b-instant": {
+      "problem_id": "opt_06",
+      "model": "llama-3.1-8b-instant",
+      "category": "optimization",
+      "problem_text": "A logistics company has 3 trucks and needs to deliver packages to 4 cities.\nEach truck can make only one trip per day.\nCity A needs 100 packages, B needs 150, C needs 80, D needs 120.\nTruck 1 can carry up to 200 packages, Truck 2 up to 150, Truck 3 up to 180.\nEach truck can visit multiple cities in one trip, but the total carried cannot exceed capacity.\nDelivery costs per package: City A: $2, B: $3, C: $1.50, D: $2.50.\n\nAssign cities to trucks to minimize total delivery cost while meeting all demand.",
+      "response_text": "**Problem Solution**\n\n**Step 1: Sort cities by demand in descending order**\nTo assign cities to trucks efficiently, we should prioritize cities with the highest demand. \n\n City A: 100 packages\n City B: 150 packages\n City C: 80 packages\n City D: 120 packages\n\n**Step 2: Sort trucks by capacity in descending order**\nTo maximize the number of packages delivered per trip, we should prioritize trucks with the highest capacity.\n\n Truck 1: 200 packages\n Truck 2: 150 packages\n Truck 3: 180 packages\n\n**St...",
+      "ground_truth": "Underspecified - combinatorial assignment problem",
+      "problem_notes": "Combinatorial optimization - tests routing reasoning",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_01_llama-3.1-8b-instant": {
+      "problem_id": "folio_01",
+      "model": "llama-3.1-8b-instant",
+      "category": "folio_edge_cases",
+      "problem_text": "All members of the chess club are students.\nSome students are not members of the chess club.\nAll members of the chess club attend the weekly meetings.\nJohn is a student who attends the weekly meetings.\n\nIs John necessarily a member of the chess club?",
+      "response_text": "To solve this problem, we will use a series of logical deductions based on the given information.\n\n**Step 1: Understand the given information**\n\n1. All members of the chess club are students.\n2. Some students are not members of the chess club.\n3. All members of the chess club attend the weekly meetings.\n4. John is a student who attends the weekly meetings.\n\n**Step 2: Analyze the relationships between the statements**\n\nFrom statement 1, we know that being a member of the chess club implies being ...",
+      "ground_truth": "No - attending meetings doesn't imply membership",
+      "problem_notes": "Tests converse error - affirming consequent",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_02_llama-3.1-8b-instant": {
+      "problem_id": "folio_02",
+      "model": "llama-3.1-8b-instant",
+      "category": "folio_edge_cases",
+      "problem_text": "Every person who likes coffee drinks it daily.\nSome people who drink coffee daily do not like it.\nMaria drinks coffee daily.\nEveryone who drinks coffee daily uses a coffee maker or goes to a caf\u00e9.\nMaria does not go to caf\u00e9s.\n\nDoes Maria like coffee?",
+      "response_text": "Let's solve this problem step by step.\n\n**Step 1: Analyzing the given information**\n\n- Everyone who likes coffee drinks it daily.\n- Some people who drink coffee daily do not like it.\n- Maria drinks coffee daily.\n- Everyone who drinks coffee daily uses a coffee maker or goes to a caf\u00e9.\n- Maria does not go to caf\u00e9s.\n\n**Step 2: Drawing conclusions from the given information**\n\nFrom the statement \"Everyone who drinks coffee daily uses a coffee maker or goes to a caf\u00e9,\" we can conclude that if a pers...",
+      "ground_truth": "Cannot be determined - insufficient information",
+      "problem_notes": "Tests handling of underspecification",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_03_llama-3.1-8b-instant": {
+      "problem_id": "folio_03",
+      "model": "llama-3.1-8b-instant",
+      "category": "folio_edge_cases",
+      "problem_text": "All birds can fly except penguins and ostriches.\nTweety is a bird.\nPenguins live in cold climates.\nTweety does not live in a cold climate.\n\nCan Tweety fly?",
+      "response_text": "To solve this problem, I will use a logical reasoning process. Here are the steps:\n\n**Step 1: Identify the given information**\n\n- All birds can fly except penguins and ostriches.\n- Tweety is a bird.\n- Penguins live in cold climates.\n- Tweety does not live in a cold climate.\n\n**Step 2: Analyze the information**\n\nFrom the first statement, we know that all birds can fly except penguins and ostriches. This implies that if a bird is not a penguin or an ostrich, it can fly.\n\nFrom the second statement,...",
+      "ground_truth": "Cannot be determined - Tweety might be an ostrich",
+      "problem_notes": "Tests closed-world vs open-world reasoning",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_04_llama-3.1-8b-instant": {
+      "problem_id": "folio_04",
+      "model": "llama-3.1-8b-instant",
+      "category": "folio_edge_cases",
+      "problem_text": "Most software engineers know at least one programming language.\nAll people who know at least one programming language can write code.\nSarah is a software engineer.\nEveryone who can write code has written a program.\n\nHas Sarah written a program?",
+      "response_text": "To solve this problem, we will use a logical reasoning process known as syllogism. A syllogism is a form of logical argument that uses deductive reasoning to arrive at a conclusion based on two or more premises.\n\n**Step 1: Identify the premises**\n\nPremise 1: Most software engineers know at least one programming language.\nPremise 2: All people who know at least one programming language can write code.\nPremise 3: Sarah is a software engineer.\nPremise 4: Everyone who can write code has written a pr...",
+      "ground_truth": "Cannot be determined - 'most' is not 'all'",
+      "problem_notes": "Tests quantifier ambiguity - 'most' vs 'all'",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_05_llama-3.1-8b-instant": {
+      "problem_id": "folio_05",
+      "model": "llama-3.1-8b-instant",
+      "category": "folio_edge_cases",
+      "problem_text": "No vegetarian eats meat.\nSome athletes are vegetarians.\nAll marathon runners are athletes.\nTom is a marathon runner who does not eat meat.\n\nIs Tom a vegetarian?",
+      "response_text": "To solve this problem, we will use a method called deduction, which involves using logical premises to arrive at a conclusion.\n\n**Step 1: Analyze the given statements**\n\n1. No vegetarian eats meat.\n2. Some athletes are vegetarians.\n3. All marathon runners are athletes.\n4. Tom is a marathon runner who does not eat meat.\n\n**Step 2: Identify the relationships between the premises**\n\nFrom statement 3, we know that all marathon runners are athletes. Since Tom is a marathon runner, we can infer that T...",
+      "ground_truth": "Cannot be determined - not eating meat doesn't imply vegetarian",
+      "problem_notes": "Tests necessary vs sufficient conditions",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_06_llama-3.1-8b-instant": {
+      "problem_id": "folio_06",
+      "model": "llama-3.1-8b-instant",
+      "category": "folio_edge_cases",
+      "problem_text": "Every student who passes the exam studied for at least 10 hours.\nSome students who studied for at least 10 hours did not pass.\nLisa studied for 12 hours.\nAll students who studied for more than 15 hours passed.\nStudents either passed or failed, there is no other outcome.\n\nDid Lisa pass the exam?",
+      "response_text": "To determine if Lisa passed the exam, we need to follow these steps and analyze the given information:\n\n1. **Given Information:**\n   - Every student who passes the exam studied for at least 10 hours.\n   - Some students who studied for at least 10 hours did not pass.\n   - Lisa studied for 12 hours.\n   - All students who studied for more than 15 hours passed.\n   - Students either passed or failed.\n\n2. **Step 1: Determine the criteria for passing the exam.**\n   From the given information, we know t...",
+      "ground_truth": "Cannot be determined - studied 10+ hours is necessary but not sufficient",
+      "problem_notes": "Tests reasoning with thresholds and exceptions",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_01_llama-3.3-70b-versatile": {
+      "problem_id": "lg_01",
+      "model": "llama-3.3-70b-versatile",
+      "category": "logic_grids",
+      "problem_text": "Five people (Alice, Bob, Carol, Dave, Eve) each own exactly one pet (cat, dog, bird, fish, hamster)\nand live in houses of different colors (red, blue, green, yellow, white). Given:\n1. Alice does not live in the red house\n2. The person in the blue house owns a dog\n3. Carol owns a bird\n4. Dave lives in the green house\n5. The person with the fish lives in the yellow house\n6. Eve does not own the cat\n7. Bob does not live in the white house\n8. The person in the red house owns a hamster\n9. Alice does not own a dog\n\nWho lives in which colored house and owns which pet?",
+      "response_text": "To solve this problem, we will go through the given clues step by step and deduce the information.\n\nFrom clue 4, we know:\n- Dave lives in the green house.\n\nFrom clue 5, we know:\n- The person with the fish lives in the yellow house.\n\nFrom clue 8, we know:\n- The person in the red house owns a hamster.\n\nFrom clue 2, we know:\n- The person in the blue house owns a dog.\n\nNow, let's combine the information:\n- Red house: hamster (owner unknown)\n- Blue house: dog (owner unknown)\n- Green house: Dave (pet ...",
+      "ground_truth": {
+        "Alice": {
+          "house": "white",
+          "pet": "fish"
+        },
+        "Bob": {
+          "house": "red",
+          "pet": "hamster"
+        },
+        "Carol": {
+          "house": "blue",
+          "pet": "bird"
+        },
+        "Dave": {
+          "house": "green",
+          "pet": "cat"
+        },
+        "Eve": {
+          "house": "yellow",
+          "pet": "fish"
+        }
+      },
+      "problem_notes": "Multiple constraints interact, requires systematic deduction",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_02_llama-3.3-70b-versatile": {
+      "problem_id": "lg_02",
+      "model": "llama-3.3-70b-versatile",
+      "category": "logic_grids",
+      "problem_text": "Four students (John, Mary, Sam, Lisa) take four different subjects (Math, English, Science, History).\nEach gets a different grade (A, B, C, D). Given:\n1. John did not get an A\n2. The student who got an A in Math is not Mary\n3. Sam got a B\n4. Lisa took Science\n5. The student who took English got a C\n6. John took History\n7. The student who took Math did not get a D\n8. Mary did not take English\n\nWhat grade did each student get in which subject?",
+      "response_text": "To solve this problem, let's break down the given information step by step:\n\n1. John did not get an A.\n2. The student who got an A in Math is not Mary.\n3. Sam got a B.\n4. Lisa took Science.\n5. The student who took English got a C.\n6. John took History.\n7. The student who took Math did not get a D.\n8. Mary did not take English.\n\nLet's start by using the information that is most specific and restrictive:\n\n- From (6), we know John took History.\n- From (4), we know Lisa took Science.\n- From (3), we ...",
+      "ground_truth": {
+        "John": {
+          "subject": "History",
+          "grade": "D"
+        },
+        "Mary": {
+          "subject": "Math",
+          "grade": "A"
+        },
+        "Sam": {
+          "subject": "English",
+          "grade": "B"
+        },
+        "Lisa": {
+          "subject": "Science",
+          "grade": "C"
+        }
+      },
+      "problem_notes": "Ground truth has an error to test verification",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_03_llama-3.3-70b-versatile": {
+      "problem_id": "lg_03",
+      "model": "llama-3.3-70b-versatile",
+      "category": "logic_grids",
+      "problem_text": "Six people sit in a row at a conference (seats 1-6, left to right).\nThe people are: Anna, Ben, Claire, Dan, Emma, Frank.\n1. Anna sits immediately to the left of Ben\n2. Claire sits in seat 3\n3. Dan does not sit in seat 1 or seat 6\n4. Emma sits exactly two seats away from Frank\n5. Ben does not sit in seat 5\n6. Frank sits somewhere to the right of Anna\n7. Dan sits immediately to the right of Emma\n\nWhat is the seating arrangement from left to right?",
+      "response_text": "To solve this problem, let's analyze the given conditions step by step:\n\n1. Anna sits immediately to the left of Ben.\n   - This means that Anna and Ben must occupy two consecutive seats, with Anna on the left.\n\n2. Claire sits in seat 3.\n   - This gives us a fixed point: _ _ Claire _ _ _\n\n3. Dan does not sit in seat 1 or seat 6.\n   - This means Dan can only sit in seats 2, 3, 4, or 5, but since Claire is in seat 3, Dan can only be in seats 2, 4, or 5.\n\n4. Emma sits exactly two seats away from Fra...",
+      "ground_truth": "Emma, Dan, Claire, Anna, Ben, Frank",
+      "problem_notes": "Spatial constraints with implicit ordering",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_04_llama-3.3-70b-versatile": {
+      "problem_id": "lg_04",
+      "model": "llama-3.3-70b-versatile",
+      "category": "logic_grids",
+      "problem_text": "A chef prepares 5 dishes (appetizer, soup, salad, main, dessert) using 5 ingredients\nas the primary component (chicken, beef, fish, vegetables, fruit). Each dish takes\na different amount of time (15, 30, 45, 60, 90 minutes).\n1. The soup takes 30 minutes\n2. The dish with chicken is not the appetizer\n3. The main course takes 60 minutes\n4. The fish dish takes longer than the vegetable dish\n5. The dessert uses fruit\n6. The salad takes 15 minutes\n7. The beef dish takes 90 minutes\n8. The appetizer does not use vegetables\n9. The soup uses chicken\n\nWhich ingredient is used in which dish, and how long does each take?",
+      "response_text": "To solve this problem, let's break down the given information step by step.\n\n1. **The soup takes 30 minutes**: This gives us the time for one of the dishes directly.\n\n2. **The dish with chicken is not the appetizer**: This tells us that chicken cannot be used in the appetizer.\n\n3. **The main course takes 60 minutes**: This gives us the time for another dish.\n\n4. **The fish dish takes longer than the vegetable dish**: This comparison doesn't give us exact times but tells us about the relative tim...",
+      "ground_truth": {
+        "appetizer": {
+          "ingredient": "fish",
+          "time": 45
+        },
+        "soup": {
+          "ingredient": "chicken",
+          "time": 30
+        },
+        "salad": {
+          "ingredient": "vegetables",
+          "time": 15
+        },
+        "main": {
+          "ingredient": "beef",
+          "time": 90
+        },
+        "dessert": {
+          "ingredient": "fruit",
+          "time": 60
+        }
+      },
+      "problem_notes": "Constraint conflict in ground truth - tests detection",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_05_llama-3.3-70b-versatile": {
+      "problem_id": "lg_05",
+      "model": "llama-3.3-70b-versatile",
+      "category": "logic_grids",
+      "problem_text": "Four friends go shopping and each buys exactly one item from a different store.\nFriends: Amy, Brad, Cathy, Derek\nStores: Bookstore, Electronics, Clothing, Grocery\nItems: Novel, Headphones, Jacket, Cheese\nPrices: $10, $15, $25, $40\n1. Amy spent $25\n2. The item from the Bookstore cost $10\n3. Brad bought headphones\n4. The jacket cost more than the cheese\n5. Cathy shopped at the Grocery store\n6. The item from Electronics cost $40\n7. Derek did not buy the novel\n8. The cheese cost $15\n9. The item from Clothing was not $10\n\nWho bought what from which store for how much?",
+      "response_text": "To solve this problem, let's analyze each statement step by step and deduce the information:\n\n1. Amy spent $25\n- This tells us Amy's expenditure but not what she bought or from which store.\n\n2. The item from the Bookstore cost $10\n- This gives us the cost of an item but not who bought it or what the item is.\n\n3. Brad bought headphones\n- Since Brad bought headphones, and given the items and their prices, we know Brad shopped at the Electronics store. However, we need to reconcile this with statem...",
+      "ground_truth": {
+        "Amy": {
+          "store": "Clothing",
+          "item": "Jacket",
+          "price": 25
+        },
+        "Brad": {
+          "store": "Electronics",
+          "item": "Headphones",
+          "price": 40
+        },
+        "Cathy": {
+          "store": "Grocery",
+          "item": "Cheese",
+          "price": 15
+        },
+        "Derek": {
+          "store": "Bookstore",
+          "item": "Novel",
+          "price": 10
+        }
+      },
+      "problem_notes": "Ground truth violates constraint - tests verification",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_06_llama-3.3-70b-versatile": {
+      "problem_id": "lg_06",
+      "model": "llama-3.3-70b-versatile",
+      "category": "logic_grids",
+      "problem_text": "A tournament has 5 teams (Red, Blue, Green, Yellow, Orange) competing.\nEach team has a captain, a different uniform number (1, 2, 3, 4, 5), and scores\na different number of points (10, 15, 20, 25, 30).\n1. The Red team scored 20 points\n2. Team #3 is captained by Sam\n3. The Blue team's captain is Alex\n4. The team that scored 30 points wears #1\n5. Jordan captains the Green team\n6. The Yellow team did not score 10 points\n7. Team #5 scored 15 points\n8. Morgan does not captain the Orange team\n9. The team that scored 10 points is not #2\n\nFind the complete assignments: team, captain, number, points.",
+      "response_text": "To solve this problem, we will go through the given statements step by step and use the process of elimination to find the complete assignments.\n\n### Initial Setup\n\n- Teams: Red, Blue, Green, Yellow, Orange\n- Captains: Alex, Jordan, Morgan, Sam (and one more unknown)\n- Uniform Numbers: 1, 2, 3, 4, 5\n- Points: 10, 15, 20, 25, 30\n\n### Step 1: Apply Given Statements Directly\n\n1. **Red scored 20 points.**\n   - Red: 20 points (Captain and Number unknown)\n\n2. **Team #3 is captained by Sam.**\n   - #3: ...",
+      "ground_truth": "Underspecified - multiple valid solutions exist",
+      "problem_notes": "Deliberately underspecified - should detect this",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_07_llama-3.3-70b-versatile": {
+      "problem_id": "lg_07",
+      "model": "llama-3.3-70b-versatile",
+      "category": "logic_grids",
+      "problem_text": "Five houses in a row (numbered 1-5, left to right) are painted different colors\nand have different types of gardens.\nColors: Red, Blue, Green, Yellow, White\nGardens: Rose, Tulip, Daisy, Sunflower, Orchid\n1. The Blue house is immediately to the left of the Green house\n2. House #3 has a Rose garden\n3. The Red house is not at either end\n4. The house with Tulips is two positions to the right of the White house\n5. The Yellow house has a Sunflower garden\n6. House #1 is not Blue\n7. The house with Orchids is next to the Green house\n8. The Red house has a Daisy garden\n9. House #5 is not Yellow\n\nWhat color is each house and what garden does it have?",
+      "response_text": "To solve this problem, let's break it down step by step, using the given clues to deduce the colors and gardens of the houses.\n\n1. **The Blue house is immediately to the left of the Green house.**\n   - This means the order for these two houses must be Blue-Green, but we don't know their positions yet.\n\n2. **House #3 has a Rose garden.**\n   - This clue doesn't give us color information directly, but it tells us the garden type of house #3.\n\n3. **The Red house is not at either end.**\n   - This mea...",
+      "ground_truth": {
+        "1": {
+          "color": "White",
+          "garden": "Orchid"
+        },
+        "2": {
+          "color": "Blue",
+          "garden": "Sunflower"
+        },
+        "3": {
+          "color": "Green",
+          "garden": "Rose"
+        },
+        "4": {
+          "color": "Yellow",
+          "garden": "Tulip"
+        },
+        "5": {
+          "color": "Red",
+          "garden": "Daisy"
+        }
+      },
+      "problem_notes": "Ground truth has constraint violation",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_08_llama-3.3-70b-versatile": {
+      "problem_id": "lg_08",
+      "model": "llama-3.3-70b-versatile",
+      "category": "logic_grids",
+      "problem_text": "Six people (Alice, Bob, Carol, Dan, Eve, Frank) work in different departments\n(Sales, Marketing, IT, HR, Finance, Operations) and have different years of\nexperience (1, 3, 5, 7, 10, 15).\n1. Alice has more experience than Bob\n2. The person in IT has 7 years of experience\n3. Carol works in Marketing\n4. The person with 15 years is in Finance\n5. Dan has 5 years of experience\n6. Eve is not in Sales\n7. The person in HR has less than 5 years of experience\n8. Frank has more experience than Carol\n9. Bob is in Operations\n10. The person in Sales has 10 years of experience\n\nWho works in which department with how many years of experience?",
+      "response_text": "To solve this problem, we will go through the given statements step by step and deduce the information about each person's department and years of experience.\n\n1. **Alice has more experience than Bob**: This statement gives us a relationship between Alice and Bob but doesn't specify their departments or exact years of experience yet.\n\n2. **The person in IT has 7 years of experience**: We know the experience of the person in IT but not who it is.\n\n3. **Carol works in Marketing**: Now we know Caro...",
+      "ground_truth": {
+        "Alice": {
+          "dept": "Sales",
+          "years": 10
+        },
+        "Bob": {
+          "dept": "Operations",
+          "years": 3
+        },
+        "Carol": {
+          "dept": "Marketing",
+          "years": 1
+        },
+        "Dan": {
+          "dept": "IT",
+          "years": 5
+        },
+        "Eve": {
+          "dept": "HR",
+          "years": 7
+        },
+        "Frank": {
+          "dept": "Finance",
+          "years": 15
+        }
+      },
+      "problem_notes": "Multiple constraint violations in ground truth",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_01_llama-3.3-70b-versatile": {
+      "problem_id": "opt_01",
+      "model": "llama-3.3-70b-versatile",
+      "category": "optimization",
+      "problem_text": "A bakery makes three types of bread: white, wheat, and rye. Each loaf of white bread\nrequires 2 cups of flour and 1 hour of oven time. Each loaf of wheat bread requires\n3 cups of flour and 1.5 hours of oven time. Each loaf of rye bread requires 2.5 cups\nof flour and 2 hours of oven time. The bakery has 100 cups of flour and 40 hours of\noven time available per day. White bread sells for $3, wheat for $4, and rye for $5.\n\nHow many loaves of each type should the bakery make to maximize revenue?",
+      "response_text": "To solve this problem, we'll use linear programming techniques. Let's break it down step by step:\n\n**Step 1: Define the variables**\n\nLet's denote the number of loaves of white, wheat, and rye bread as W, X, and Y, respectively.\n\n**Step 2: Define the constraints**\n\nThe bakery has limited resources: flour and oven time. We can set up the following constraints:\n\n1. Flour constraint: 2W + 3X + 2.5Y \u2264 100 (since each loaf of white bread requires 2 cups of flour, each loaf of wheat bread requires 3 cu...",
+      "ground_truth": {
+        "white": 0,
+        "wheat": 0,
+        "rye": 20,
+        "max_revenue": 100
+      },
+      "problem_notes": "Standard LP, tests basic optimization reasoning",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_02_llama-3.3-70b-versatile": {
+      "problem_id": "opt_02",
+      "model": "llama-3.3-70b-versatile",
+      "category": "optimization",
+      "problem_text": "A company needs to ship packages from 2 warehouses to 3 stores.\nWarehouse A has 50 packages, Warehouse B has 70 packages.\nStore 1 needs at least 30 packages, Store 2 needs at least 40, Store 3 needs at least 35.\nShipping costs ($ per package):\n- A to 1: $2, A to 2: $3, A to 3: $4\n- B to 1: $3, B to 2: $2, B to 3: $1\n\nWhat is the minimum cost shipping plan?",
+      "response_text": "To find the minimum cost shipping plan, we can approach this problem using a method similar to the transportation problem in linear programming. We will try to minimize the total cost by allocating packages from the warehouses to the stores in the most cost-effective way.\n\n### Step 1: Determine the Total Supply and Demand\n\n- **Total Supply**: Warehouse A has 50 packages, and Warehouse B has 70 packages. So, the total supply is 50 + 70 = 120 packages.\n- **Total Demand**: Store 1 needs at least 30...",
+      "ground_truth": {
+        "A_to_1": 30,
+        "A_to_2": 20,
+        "A_to_3": 0,
+        "B_to_1": 0,
+        "B_to_2": 20,
+        "B_to_3": 35,
+        "min_cost": 175
+      },
+      "problem_notes": "Transportation problem with constraint violation",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_03_llama-3.3-70b-versatile": {
+      "problem_id": "opt_03",
+      "model": "llama-3.3-70b-versatile",
+      "category": "optimization",
+      "problem_text": "A farmer has 100 acres of land and wants to plant corn and soybeans.\nCorn requires 1 acre and 2 labor-hours per unit, yields $200 profit.\nSoybeans require 1 acre and 1 labor-hour per unit, yields $150 profit.\nThe farmer has 150 labor-hours available.\nAdditionally, the farmer must plant at least 20 acres of corn to meet a contract.\n\nHow many acres of each crop should be planted to maximize profit?",
+      "response_text": "To solve this problem, we will use linear programming techniques. Let's break it down step by step:\n\n1. Define the variables:\n   - Let C be the number of acres of corn planted.\n   - Let S be the number of acres of soybeans planted.\n\n2. Define the objective function:\n   - The objective is to maximize profit. The profit per acre of corn is $200, and the profit per acre of soybeans is $150.\n   - The total profit (P) can be represented as: P = 200C + 150S.\n\n3. Define the constraints:\n   - The farmer...",
+      "ground_truth": {
+        "corn": 50,
+        "soybeans": 50,
+        "max_profit": 17500
+      },
+      "problem_notes": "LP with lower bound constraint",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_04_llama-3.3-70b-versatile": {
+      "problem_id": "opt_04",
+      "model": "llama-3.3-70b-versatile",
+      "category": "optimization",
+      "problem_text": "A factory produces two products, A and B. Each unit of A requires 2 hours on Machine 1\nand 3 hours on Machine 2. Each unit of B requires 4 hours on Machine 1 and 2 hours on\nMachine 2. Machine 1 is available for 40 hours per week, Machine 2 for 36 hours per week.\nProduct A yields $30 profit, Product B yields $40 profit.\nThe factory must produce at least 5 units total per week.\n\nHow many units of each product should be made to maximize weekly profit?",
+      "response_text": "To solve this problem, we will use linear programming techniques. We will define variables, set up constraints, and then find the optimal solution.\n\n**Step 1: Define variables**\nLet's define two variables:\n- x: Number of units of Product A produced per week\n- y: Number of units of Product B produced per week\n\n**Step 2: Set up objective function**\nThe objective is to maximize the weekly profit. The profit from each unit of Product A is $30, and from each unit of Product B is $40. So, the objectiv...",
+      "ground_truth": "Underspecified - multiple optimal solutions",
+      "problem_notes": "Tests whether model finds optimal solution uniqueness",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_05_llama-3.3-70b-versatile": {
+      "problem_id": "opt_05",
+      "model": "llama-3.3-70b-versatile",
+      "category": "optimization",
+      "problem_text": "A pharmaceutical company makes three drugs: X, Y, and Z.\nDrug X requires 3 mg of ingredient A and 2 mg of ingredient B per pill, sells for $5.\nDrug Y requires 2 mg of A and 4 mg of B per pill, sells for $6.\nDrug Z requires 1 mg of A and 1 mg of B per pill, sells for $3.\nThe company has 1000 mg of A and 1200 mg of B available.\nDue to regulations, they must produce at least 50 pills of drug X.\nThey cannot produce more than 200 pills of any single drug.\n\nHow many pills of each should be produced to maximize revenue?",
+      "response_text": "To solve this problem, we'll use linear programming techniques. Let's break it down step by step:\n\n1. Define the variables:\n   - X: Number of pills of drug X produced\n   - Y: Number of pills of drug Y produced\n   - Z: Number of pills of drug Z produced\n\n2. Define the objective function (revenue):\n   - The revenue from each pill of X is $5, from Y is $6, and from Z is $3.\n   - The total revenue (R) can be represented as: R = 5X + 6Y + 3Z\n\n3. Define the constraints:\n   - Ingredient A constraint: 3...",
+      "ground_truth": {
+        "X": 50,
+        "Y": 200,
+        "Z": 200,
+        "max_revenue": 1850
+      },
+      "problem_notes": "LP with both lower and upper bounds",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_06_llama-3.3-70b-versatile": {
+      "problem_id": "opt_06",
+      "model": "llama-3.3-70b-versatile",
+      "category": "optimization",
+      "problem_text": "A logistics company has 3 trucks and needs to deliver packages to 4 cities.\nEach truck can make only one trip per day.\nCity A needs 100 packages, B needs 150, C needs 80, D needs 120.\nTruck 1 can carry up to 200 packages, Truck 2 up to 150, Truck 3 up to 180.\nEach truck can visit multiple cities in one trip, but the total carried cannot exceed capacity.\nDelivery costs per package: City A: $2, B: $3, C: $1.50, D: $2.50.\n\nAssign cities to trucks to minimize total delivery cost while meeting all demand.",
+      "response_text": "To solve this problem, we need to assign cities to trucks in a way that minimizes the total delivery cost while meeting all the demand. Here's a step-by-step approach:\n\n**Step 1: Sort cities by demand and cost**\n\nFirst, let's sort the cities by their demand and cost per package:\n\n| City | Demand | Cost per package |\n| --- | --- | --- |\n| B | 150 | $3 |\n| D | 120 | $2.50 |\n| A | 100 | $2 |\n| C | 80 | $1.50 |\n\n**Step 2: Assign cities to trucks based on capacity and cost**\n\nNow, let's assign cities...",
+      "ground_truth": "Underspecified - combinatorial assignment problem",
+      "problem_notes": "Combinatorial optimization - tests routing reasoning",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_01_llama-3.3-70b-versatile": {
+      "problem_id": "folio_01",
+      "model": "llama-3.3-70b-versatile",
+      "category": "folio_edge_cases",
+      "problem_text": "All members of the chess club are students.\nSome students are not members of the chess club.\nAll members of the chess club attend the weekly meetings.\nJohn is a student who attends the weekly meetings.\n\nIs John necessarily a member of the chess club?",
+      "response_text": "To solve this problem, let's break it down step by step:\n\n1. **All members of the chess club are students.**\n   - This statement tells us that being a member of the chess club is a subset of being a student. It does not tell us that all students are members of the chess club, just that if you're in the chess club, you're definitely a student.\n\n2. **Some students are not members of the chess club.**\n   - This statement further clarifies that being a student does not automatically make you a membe...",
+      "ground_truth": "No - attending meetings doesn't imply membership",
+      "problem_notes": "Tests converse error - affirming consequent",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_02_llama-3.3-70b-versatile": {
+      "problem_id": "folio_02",
+      "model": "llama-3.3-70b-versatile",
+      "category": "folio_edge_cases",
+      "problem_text": "Every person who likes coffee drinks it daily.\nSome people who drink coffee daily do not like it.\nMaria drinks coffee daily.\nEveryone who drinks coffee daily uses a coffee maker or goes to a caf\u00e9.\nMaria does not go to caf\u00e9s.\n\nDoes Maria like coffee?",
+      "response_text": "To determine if Maria likes coffee, let's analyze the given information step by step:\n\n1. **Every person who likes coffee drinks it daily.** This statement implies a direct relationship between liking coffee and drinking it daily, but it does not guarantee that everyone who drinks coffee daily likes it.\n\n2. **Some people who drink coffee daily do not like it.** This statement directly tells us that there are individuals who consume coffee daily without having a preference for it, suggesting that...",
+      "ground_truth": "Cannot be determined - insufficient information",
+      "problem_notes": "Tests handling of underspecification",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_03_llama-3.3-70b-versatile": {
+      "problem_id": "folio_03",
+      "model": "llama-3.3-70b-versatile",
+      "category": "folio_edge_cases",
+      "problem_text": "All birds can fly except penguins and ostriches.\nTweety is a bird.\nPenguins live in cold climates.\nTweety does not live in a cold climate.\n\nCan Tweety fly?",
+      "response_text": "To determine if Tweety can fly, let's analyze the information given step by step:\n\n1. **All birds can fly except penguins and ostriches.**\n   - This statement establishes that the ability to fly is a characteristic of birds in general, with two specific exceptions: penguins and ostriches.\n\n2. **Tweety is a bird.**\n   - This tells us that Tweety belongs to the category of birds, which generally can fly, according to the first statement.\n\n3. **Penguins live in cold climates.**\n   - This provides i...",
+      "ground_truth": "Cannot be determined - Tweety might be an ostrich",
+      "problem_notes": "Tests closed-world vs open-world reasoning",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_04_llama-3.3-70b-versatile": {
+      "problem_id": "folio_04",
+      "model": "llama-3.3-70b-versatile",
+      "category": "folio_edge_cases",
+      "problem_text": "Most software engineers know at least one programming language.\nAll people who know at least one programming language can write code.\nSarah is a software engineer.\nEveryone who can write code has written a program.\n\nHas Sarah written a program?",
+      "response_text": "To solve this problem, let's break it down step by step using the given statements:\n\n1. **Most software engineers know at least one programming language.**\n   - This statement tells us that knowing at least one programming language is common among software engineers, but it doesn't directly tell us about Sarah.\n\n2. **All people who know at least one programming language can write code.**\n   - This establishes a relationship between knowing a programming language and the ability to write code. If...",
+      "ground_truth": "Cannot be determined - 'most' is not 'all'",
+      "problem_notes": "Tests quantifier ambiguity - 'most' vs 'all'",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_05_llama-3.3-70b-versatile": {
+      "problem_id": "folio_05",
+      "model": "llama-3.3-70b-versatile",
+      "category": "folio_edge_cases",
+      "problem_text": "No vegetarian eats meat.\nSome athletes are vegetarians.\nAll marathon runners are athletes.\nTom is a marathon runner who does not eat meat.\n\nIs Tom a vegetarian?",
+      "response_text": "To solve this problem, let's analyze the given statements step by step:\n\n1. **No vegetarian eats meat.**\n   - This statement establishes a clear characteristic of vegetarians: they do not eat meat.\n\n2. **Some athletes are vegetarians.**\n   - This indicates that there is an overlap between athletes and vegetarians, but it does not imply that all athletes are vegetarians, just that some are.\n\n3. **All marathon runners are athletes.**\n   - This statement places marathon runners within the category ...",
+      "ground_truth": "Cannot be determined - not eating meat doesn't imply vegetarian",
+      "problem_notes": "Tests necessary vs sufficient conditions",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_06_llama-3.3-70b-versatile": {
+      "problem_id": "folio_06",
+      "model": "llama-3.3-70b-versatile",
+      "category": "folio_edge_cases",
+      "problem_text": "Every student who passes the exam studied for at least 10 hours.\nSome students who studied for at least 10 hours did not pass.\nLisa studied for 12 hours.\nAll students who studied for more than 15 hours passed.\nStudents either passed or failed, there is no other outcome.\n\nDid Lisa pass the exam?",
+      "response_text": "To determine if Lisa passed the exam, let's analyze the given information step by step:\n\n1. **Every student who passed the exam studied for at least 10 hours.**\n   - This statement implies that studying for at least 10 hours is a necessary condition for passing the exam, but it does not guarantee passing.\n\n2. **Some students who studied for at least 10 hours did not pass.**\n   - This statement indicates that studying for at least 10 hours is not a sufficient condition for passing the exam. There...",
+      "ground_truth": "Cannot be determined - studied 10+ hours is necessary but not sufficient",
+      "problem_notes": "Tests reasoning with thresholds and exceptions",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_01_gemini-2.5-flash": {
+      "problem_id": "lg_01",
+      "model": "gemini-2.5-flash",
+      "category": "logic_grids",
+      "problem_text": "Five people (Alice, Bob, Carol, Dave, Eve) each own exactly one pet (cat, dog, bird, fish, hamster)\nand live in houses of different colors (red, blue, green, yellow, white). Given:\n1. Alice does not live in the red house\n2. The person in the blue house owns a dog\n3. Carol owns a bird\n4. Dave lives in the green house\n5. The person with the fish lives in the yellow house\n6. Eve does not own the cat\n7. Bob does not live in the white house\n8. The person in the red house owns a hamster\n9. Alice does not own a dog\n\nWho lives in which colored house and owns which pet?",
+      "response_text": "To solve this problem, we will use a table to organize the information and deduce the relationships step-by-step.\n\nFirst, let's list the categories:\n*   **People:** Alice, Bob, Carol, Dave, Eve\n*   **Pets:** Cat, Dog, Bird, Fish, Hamster\n*   **House Colors:** Red, Blue, Green, Yellow, White\n\nWe'll start with an empty table and fill it in as we go.\n\n| Person | Pet | House Color |\n|:-------|:----|:------------|\n| Alice  |     |             |\n| Bob    |     |             |\n| Carol  |     |         ...",
+      "ground_truth": {
+        "Alice": {
+          "house": "white",
+          "pet": "fish"
+        },
+        "Bob": {
+          "house": "red",
+          "pet": "hamster"
+        },
+        "Carol": {
+          "house": "blue",
+          "pet": "bird"
+        },
+        "Dave": {
+          "house": "green",
+          "pet": "cat"
+        },
+        "Eve": {
+          "house": "yellow",
+          "pet": "fish"
+        }
+      },
+      "problem_notes": "Multiple constraints interact, requires systematic deduction",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_02_gemini-2.5-flash": {
+      "problem_id": "lg_02",
+      "model": "gemini-2.5-flash",
+      "category": "logic_grids",
+      "problem_text": "Four students (John, Mary, Sam, Lisa) take four different subjects (Math, English, Science, History).\nEach gets a different grade (A, B, C, D). Given:\n1. John did not get an A\n2. The student who got an A in Math is not Mary\n3. Sam got a B\n4. Lisa took Science\n5. The student who took English got a C\n6. John took History\n7. The student who took Math did not get a D\n8. Mary did not take English\n\nWhat grade did each student get in which subject?",
+      "response_text": "The problem asks us to determine the subject and grade for each of the four students. We will use a step-by-step deduction process.\n\nLet's list the students, subjects, and grades:\nStudents: John (J), Mary (M), Sam (S), Lisa (L)\nSubjects: Math (Ma), English (E), Science (Sc), History (H)\nGrades: A, B, C, D\n\nWe need to establish a unique Student-Subject-Grade triplet for each student.\n\n**Step 1: Identify direct assignments and initial exclusions from the clues.**\n\n*   **Clue 3: Sam got a B.**\n    ...",
+      "ground_truth": {
+        "John": {
+          "subject": "History",
+          "grade": "D"
+        },
+        "Mary": {
+          "subject": "Math",
+          "grade": "A"
+        },
+        "Sam": {
+          "subject": "English",
+          "grade": "B"
+        },
+        "Lisa": {
+          "subject": "Science",
+          "grade": "C"
+        }
+      },
+      "problem_notes": "Ground truth has an error to test verification",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_03_gemini-2.5-flash": {
+      "problem_id": "lg_03",
+      "model": "gemini-2.5-flash",
+      "category": "logic_grids",
+      "problem_text": "Six people sit in a row at a conference (seats 1-6, left to right).\nThe people are: Anna, Ben, Claire, Dan, Emma, Frank.\n1. Anna sits immediately to the left of Ben\n2. Claire sits in seat 3\n3. Dan does not sit in seat 1 or seat 6\n4. Emma sits exactly two seats away from Frank\n5. Ben does not sit in seat 5\n6. Frank sits somewhere to the right of Anna\n7. Dan sits immediately to the right of Emma\n\nWhat is the seating arrangement from left to right?",
+      "response_text": "The problem asks us to determine the seating arrangement of six people (Anna, Ben, Claire, Dan, Emma, Frank) in six seats from left to right, based on seven clues.\n\nLet's represent the seats as `S1 S2 S3 S4 S5 S6`.\n\nHere's a step-by-step breakdown of the reasoning:\n\n**Step 1: Place Claire (Clue 2)**\n*   Clue 2 states: Claire sits in seat 3.\n*   Initial arrangement: `_ _ C _ _ _`\n\n**Step 2: Identify and Constrain Blocks (Clues 1, 7, 3, 5)**\n\n*   **Clue 1: Anna sits immediately to the left of Ben....",
+      "ground_truth": "Emma, Dan, Claire, Anna, Ben, Frank",
+      "problem_notes": "Spatial constraints with implicit ordering",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_04_gemini-2.5-flash": {
+      "problem_id": "lg_04",
+      "model": "gemini-2.5-flash",
+      "category": "logic_grids",
+      "problem_text": "A chef prepares 5 dishes (appetizer, soup, salad, main, dessert) using 5 ingredients\nas the primary component (chicken, beef, fish, vegetables, fruit). Each dish takes\na different amount of time (15, 30, 45, 60, 90 minutes).\n1. The soup takes 30 minutes\n2. The dish with chicken is not the appetizer\n3. The main course takes 60 minutes\n4. The fish dish takes longer than the vegetable dish\n5. The dessert uses fruit\n6. The salad takes 15 minutes\n7. The beef dish takes 90 minutes\n8. The appetizer does not use vegetables\n9. The soup uses chicken\n\nWhich ingredient is used in which dish, and how long does each take?",
+      "response_text": "To solve this problem, we'll create a table to keep track of the assignments for each dish: its type, the ingredient used, and the time it takes to prepare. We'll fill this table step-by-step using the given clues.\n\n**Given Information:**\n*   **Dishes:** Appetizer, Soup, Salad, Main, Dessert\n*   **Ingredients:** Chicken, Beef, Fish, Vegetables, Fruit\n*   **Times (minutes):** 15, 30, 45, 60, 90\n\n**Initial Setup Table:**\n| Dish      | Ingredient | Time (minutes) |\n| :-------- | :--------- | :-----...",
+      "ground_truth": {
+        "appetizer": {
+          "ingredient": "fish",
+          "time": 45
+        },
+        "soup": {
+          "ingredient": "chicken",
+          "time": 30
+        },
+        "salad": {
+          "ingredient": "vegetables",
+          "time": 15
+        },
+        "main": {
+          "ingredient": "beef",
+          "time": 90
+        },
+        "dessert": {
+          "ingredient": "fruit",
+          "time": 60
+        }
+      },
+      "problem_notes": "Constraint conflict in ground truth - tests detection",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_05_gemini-2.5-flash": {
+      "problem_id": "lg_05",
+      "model": "gemini-2.5-flash",
+      "category": "logic_grids",
+      "problem_text": "Four friends go shopping and each buys exactly one item from a different store.\nFriends: Amy, Brad, Cathy, Derek\nStores: Bookstore, Electronics, Clothing, Grocery\nItems: Novel, Headphones, Jacket, Cheese\nPrices: $10, $15, $25, $40\n1. Amy spent $25\n2. The item from the Bookstore cost $10\n3. Brad bought headphones\n4. The jacket cost more than the cheese\n5. Cathy shopped at the Grocery store\n6. The item from Electronics cost $40\n7. Derek did not buy the novel\n8. The cheese cost $15\n9. The item from Clothing was not $10\n\nWho bought what from which store for how much?",
+      "response_text": "Let's solve this problem step by step, using a table to keep track of the information.\n\n**Categories:**\n*   Friends: Amy, Brad, Cathy, Derek\n*   Stores: Bookstore, Electronics, Clothing, Grocery\n*   Items: Novel, Headphones, Jacket, Cheese\n*   Prices: $10, $15, $25, $40\n\n**Initial Setup Table:**\n\n| Friend | Store | Item | Price |\n| :----- | :------ | :-------- | :------ |\n| Amy | | | |\n| Brad | | | |\n| Cathy | | | |\n| Derek | | | |\n\n**Let's process the clues one by one and make deductions:**\n\n1....",
+      "ground_truth": {
+        "Amy": {
+          "store": "Clothing",
+          "item": "Jacket",
+          "price": 25
+        },
+        "Brad": {
+          "store": "Electronics",
+          "item": "Headphones",
+          "price": 40
+        },
+        "Cathy": {
+          "store": "Grocery",
+          "item": "Cheese",
+          "price": 15
+        },
+        "Derek": {
+          "store": "Bookstore",
+          "item": "Novel",
+          "price": 10
+        }
+      },
+      "problem_notes": "Ground truth violates constraint - tests verification",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_06_gemini-2.5-flash": {
+      "problem_id": "lg_06",
+      "model": "gemini-2.5-flash",
+      "category": "logic_grids",
+      "problem_text": "A tournament has 5 teams (Red, Blue, Green, Yellow, Orange) competing.\nEach team has a captain, a different uniform number (1, 2, 3, 4, 5), and scores\na different number of points (10, 15, 20, 25, 30).\n1. The Red team scored 20 points\n2. Team #3 is captained by Sam\n3. The Blue team's captain is Alex\n4. The team that scored 30 points wears #1\n5. Jordan captains the Green team\n6. The Yellow team did not score 10 points\n7. Team #5 scored 15 points\n8. Morgan does not captain the Orange team\n9. The team that scored 10 points is not #2\n\nFind the complete assignments: team, captain, number, points.",
+      "response_text": "To solve this problem, we will use a logic grid to keep track of the assignments for each team (Team Name, Captain, Uniform Number, Points).\n\n**Categories and their possible values:**\n*   **Teams:** Red, Blue, Green, Yellow, Orange\n*   **Captains:** Alex, Jordan, Sam, Morgan, (one unknown 5th captain, let's call them 'Unknown')\n*   **Numbers:** 1, 2, 3, 4, 5\n*   **Points:** 10, 15, 20, 25, 30\n\nWe'll start by filling in direct assignments and then use deductions to eliminate possibilities.\n\n**Ini...",
+      "ground_truth": "Underspecified - multiple valid solutions exist",
+      "problem_notes": "Deliberately underspecified - should detect this",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_07_gemini-2.5-flash": {
+      "problem_id": "lg_07",
+      "model": "gemini-2.5-flash",
+      "category": "logic_grids",
+      "problem_text": "Five houses in a row (numbered 1-5, left to right) are painted different colors\nand have different types of gardens.\nColors: Red, Blue, Green, Yellow, White\nGardens: Rose, Tulip, Daisy, Sunflower, Orchid\n1. The Blue house is immediately to the left of the Green house\n2. House #3 has a Rose garden\n3. The Red house is not at either end\n4. The house with Tulips is two positions to the right of the White house\n5. The Yellow house has a Sunflower garden\n6. House #1 is not Blue\n7. The house with Orchids is next to the Green house\n8. The Red house has a Daisy garden\n9. House #5 is not Yellow\n\nWhat color is each house and what garden does it have?",
+      "response_text": "Here's a step-by-step solution to the problem:\n\nLet's represent the houses and their attributes in a table, filling it in as we deduce information.\n\n| House | Color | Garden |\n|---|---|---|\n| 1 | | |\n| 2 | | |\n| 3 | | |\n| 4 | | |\n| 5 | | |\n\n---\n\n**Step 1: Use direct information.**\n\n*   **Clue 2: House #3 has a Rose garden.**\n    *   Fill this directly into the table.\n\n| House | Color | Garden |\n|---|---|---|\n| 1 | | |\n| 2 | | |\n| **3** | | **Rose** |\n| 4 | | |\n| 5 | | |\n\n---\n\n**Step 2: Combine l...",
+      "ground_truth": {
+        "1": {
+          "color": "White",
+          "garden": "Orchid"
+        },
+        "2": {
+          "color": "Blue",
+          "garden": "Sunflower"
+        },
+        "3": {
+          "color": "Green",
+          "garden": "Rose"
+        },
+        "4": {
+          "color": "Yellow",
+          "garden": "Tulip"
+        },
+        "5": {
+          "color": "Red",
+          "garden": "Daisy"
+        }
+      },
+      "problem_notes": "Ground truth has constraint violation",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "lg_08_gemini-2.5-flash": {
+      "problem_id": "lg_08",
+      "model": "gemini-2.5-flash",
+      "category": "logic_grids",
+      "problem_text": "Six people (Alice, Bob, Carol, Dan, Eve, Frank) work in different departments\n(Sales, Marketing, IT, HR, Finance, Operations) and have different years of\nexperience (1, 3, 5, 7, 10, 15).\n1. Alice has more experience than Bob\n2. The person in IT has 7 years of experience\n3. Carol works in Marketing\n4. The person with 15 years is in Finance\n5. Dan has 5 years of experience\n6. Eve is not in Sales\n7. The person in HR has less than 5 years of experience\n8. Frank has more experience than Carol\n9. Bob is in Operations\n10. The person in Sales has 10 years of experience\n\nWho works in which department with how many years of experience?",
+      "response_text": "To solve this problem, we will systematically go through the clues and build a table to track the assignments for each person, their department, and their years of experience.\n\n**Given Information:**\n*   **People:** Alice (A), Bob (B), Carol (C), Dan (D), Eve (E), Frank (F)\n*   **Departments:** Sales (S), Marketing (M), IT (I), HR (H), Finance (Fin), Operations (O)\n*   **Experience (years):** 1, 3, 5, 7, 10, 15\n\nAll people, departments, and experience levels are unique and must be assigned one-t...",
+      "ground_truth": {
+        "Alice": {
+          "dept": "Sales",
+          "years": 10
+        },
+        "Bob": {
+          "dept": "Operations",
+          "years": 3
+        },
+        "Carol": {
+          "dept": "Marketing",
+          "years": 1
+        },
+        "Dan": {
+          "dept": "IT",
+          "years": 5
+        },
+        "Eve": {
+          "dept": "HR",
+          "years": 7
+        },
+        "Frank": {
+          "dept": "Finance",
+          "years": 15
+        }
+      },
+      "problem_notes": "Multiple constraint violations in ground truth",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_01_gemini-2.5-flash": {
+      "problem_id": "opt_01",
+      "model": "gemini-2.5-flash",
+      "category": "optimization",
+      "problem_text": "A bakery makes three types of bread: white, wheat, and rye. Each loaf of white bread\nrequires 2 cups of flour and 1 hour of oven time. Each loaf of wheat bread requires\n3 cups of flour and 1.5 hours of oven time. Each loaf of rye bread requires 2.5 cups\nof flour and 2 hours of oven time. The bakery has 100 cups of flour and 40 hours of\noven time available per day. White bread sells for $3, wheat for $4, and rye for $5.\n\nHow many loaves of each type should the bakery make to maximize revenue?",
+      "response_text": "To solve this problem, we need to set up and solve a linear programming model.\n\n**Step 1: Define Variables**\nLet $x_W$ be the number of loaves of white bread.\nLet $x_{Wh}$ be the number of loaves of wheat bread.\nLet $x_R$ be the number of loaves of rye bread.\n\n**Step 2: Formulate the Objective Function**\nThe objective is to maximize total revenue.\nRevenue = (Price per white loaf * $x_W$) + (Price per wheat loaf * $x_{Wh}$) + (Price per rye loaf * $x_R$)\nMaximize $Z = 3x_W + 4x_{Wh} + 5x_R$\n\n**St...",
+      "ground_truth": {
+        "white": 0,
+        "wheat": 0,
+        "rye": 20,
+        "max_revenue": 100
+      },
+      "problem_notes": "Standard LP, tests basic optimization reasoning",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_02_gemini-2.5-flash": {
+      "problem_id": "opt_02",
+      "model": "gemini-2.5-flash",
+      "category": "optimization",
+      "problem_text": "A company needs to ship packages from 2 warehouses to 3 stores.\nWarehouse A has 50 packages, Warehouse B has 70 packages.\nStore 1 needs at least 30 packages, Store 2 needs at least 40, Store 3 needs at least 35.\nShipping costs ($ per package):\n- A to 1: $2, A to 2: $3, A to 3: $4\n- B to 1: $3, B to 2: $2, B to 3: $1\n\nWhat is the minimum cost shipping plan?",
+      "response_text": "The problem requires us to find a shipping plan that minimizes the total cost while meeting all store demands and respecting warehouse capacities. This is a classic transportation problem.\n\n**1. Summarize Supply and Demand:**\n\n*   **Warehouses (Supply):**\n    *   Warehouse A: 50 packages\n    *   Warehouse B: 70 packages\n    *   Total Supply: 50 + 70 = 120 packages\n\n*   **Stores (Demand - Minimum):**\n    *   Store 1: at least 30 packages\n    *   Store 2: at least 40 packages\n    *   Store 3: at l...",
+      "ground_truth": {
+        "A_to_1": 30,
+        "A_to_2": 20,
+        "A_to_3": 0,
+        "B_to_1": 0,
+        "B_to_2": 20,
+        "B_to_3": 35,
+        "min_cost": 175
+      },
+      "problem_notes": "Transportation problem with constraint violation",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_03_gemini-2.5-flash": {
+      "problem_id": "opt_03",
+      "model": "gemini-2.5-flash",
+      "category": "optimization",
+      "problem_text": "A farmer has 100 acres of land and wants to plant corn and soybeans.\nCorn requires 1 acre and 2 labor-hours per unit, yields $200 profit.\nSoybeans require 1 acre and 1 labor-hour per unit, yields $150 profit.\nThe farmer has 150 labor-hours available.\nAdditionally, the farmer must plant at least 20 acres of corn to meet a contract.\n\nHow many acres of each crop should be planted to maximize profit?",
+      "response_text": "This problem can be solved using linear programming. We need to define variables, set up the objective function, and list the constraints.\n\n### Step 1: Define Variables\n\nLet $C$ be the number of acres of corn to be planted.\nLet $S$ be the number of acres of soybeans to be planted.\n\n### Step 2: Formulate the Objective Function\n\nThe goal is to maximize profit.\nProfit from corn = $200 per acre.\nProfit from soybeans = $150 per acre.\n\nObjective Function: Maximize $P = 200C + 150S$\n\n### Step 3: Formul...",
+      "ground_truth": {
+        "corn": 50,
+        "soybeans": 50,
+        "max_profit": 17500
+      },
+      "problem_notes": "LP with lower bound constraint",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_04_gemini-2.5-flash": {
+      "problem_id": "opt_04",
+      "model": "gemini-2.5-flash",
+      "category": "optimization",
+      "problem_text": "A factory produces two products, A and B. Each unit of A requires 2 hours on Machine 1\nand 3 hours on Machine 2. Each unit of B requires 4 hours on Machine 1 and 2 hours on\nMachine 2. Machine 1 is available for 40 hours per week, Machine 2 for 36 hours per week.\nProduct A yields $30 profit, Product B yields $40 profit.\nThe factory must produce at least 5 units total per week.\n\nHow many units of each product should be made to maximize weekly profit?",
+      "response_text": "This is a Linear Programming problem. We need to define variables, an objective function to maximize, and a set of constraints.\n\n### Step 1: Define Decision Variables\n\nLet:\n*   $x$ = Number of units of Product A produced per week\n*   $y$ = Number of units of Product B produced per week\n\n### Step 2: Formulate the Objective Function\n\nThe goal is to maximize weekly profit.\n*   Profit from Product A: $30 per unit\n*   Profit from Product B: $40 per unit\n\nObjective Function (P): Maximize $P = 30x + 40...",
+      "ground_truth": "Underspecified - multiple optimal solutions",
+      "problem_notes": "Tests whether model finds optimal solution uniqueness",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_05_gemini-2.5-flash": {
+      "problem_id": "opt_05",
+      "model": "gemini-2.5-flash",
+      "category": "optimization",
+      "problem_text": "A pharmaceutical company makes three drugs: X, Y, and Z.\nDrug X requires 3 mg of ingredient A and 2 mg of ingredient B per pill, sells for $5.\nDrug Y requires 2 mg of A and 4 mg of B per pill, sells for $6.\nDrug Z requires 1 mg of A and 1 mg of B per pill, sells for $3.\nThe company has 1000 mg of A and 1200 mg of B available.\nDue to regulations, they must produce at least 50 pills of drug X.\nThey cannot produce more than 200 pills of any single drug.\n\nHow many pills of each should be produced to maximize revenue?",
+      "response_text": "To solve this problem, we need to formulate it as a Linear Programming problem.\n\n**Step 1: Define Variables**\nLet $x$ be the number of pills of Drug X to be produced.\nLet $y$ be the number of pills of Drug Y to be produced.\nLet $z$ be the number of pills of Drug Z to be produced.\n\n**Step 2: Formulate the Objective Function**\nThe company wants to maximize revenue.\nRevenue from Drug X = $5 per pill\nRevenue from Drug Y = $6 per pill\nRevenue from Drug Z = $3 per pill\n\nTotal Revenue $R = 5x + 6y + 3z...",
+      "ground_truth": {
+        "X": 50,
+        "Y": 200,
+        "Z": 200,
+        "max_revenue": 1850
+      },
+      "problem_notes": "LP with both lower and upper bounds",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "opt_06_gemini-2.5-flash": {
+      "problem_id": "opt_06",
+      "model": "gemini-2.5-flash",
+      "category": "optimization",
+      "problem_text": "A logistics company has 3 trucks and needs to deliver packages to 4 cities.\nEach truck can make only one trip per day.\nCity A needs 100 packages, B needs 150, C needs 80, D needs 120.\nTruck 1 can carry up to 200 packages, Truck 2 up to 150, Truck 3 up to 180.\nEach truck can visit multiple cities in one trip, but the total carried cannot exceed capacity.\nDelivery costs per package: City A: $2, B: $3, C: $1.50, D: $2.50.\n\nAssign cities to trucks to minimize total delivery cost while meeting all demand.",
+      "response_text": "The problem requires us to assign packages from 4 cities to 3 trucks to minimize the total delivery cost, subject to truck capacity limits and meeting all city demands. Each truck can make one trip and visit multiple cities, but the total packages carried must not exceed its capacity.\n\nHere's a step-by-step approach to solve this problem:\n\n**1. Summarize Key Information:**\n\n*   **City Demands and Costs:**\n    *   City A: 100 packages @ $2.00/package\n    *   City B: 150 packages @ $3.00/package\n ...",
+      "ground_truth": "Underspecified - combinatorial assignment problem",
+      "problem_notes": "Combinatorial optimization - tests routing reasoning",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_01_gemini-2.5-flash": {
+      "problem_id": "folio_01",
+      "model": "gemini-2.5-flash",
+      "category": "folio_edge_cases",
+      "problem_text": "All members of the chess club are students.\nSome students are not members of the chess club.\nAll members of the chess club attend the weekly meetings.\nJohn is a student who attends the weekly meetings.\n\nIs John necessarily a member of the chess club?",
+      "response_text": "No, John is not necessarily a member of the chess club.\n\nHere's the reasoning process:\n\n1.  **Analyze the statements about the Chess Club:**\n    *   \"All members of the chess club are students.\" (Chess Club $\\subset$ Students)\n    *   \"All members of the chess club attend the weekly meetings.\" (Chess Club $\\subset$ Meetings Attenders)\n    *   Combining these, we know that anyone who is a member of the chess club is *both* a student *and* attends the weekly meetings.\n\n2.  **Analyze the statements...",
+      "ground_truth": "No - attending meetings doesn't imply membership",
+      "problem_notes": "Tests converse error - affirming consequent",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_02_gemini-2.5-flash": {
+      "problem_id": "folio_02",
+      "model": "gemini-2.5-flash",
+      "category": "folio_edge_cases",
+      "problem_text": "Every person who likes coffee drinks it daily.\nSome people who drink coffee daily do not like it.\nMaria drinks coffee daily.\nEveryone who drinks coffee daily uses a coffee maker or goes to a caf\u00e9.\nMaria does not go to caf\u00e9s.\n\nDoes Maria like coffee?",
+      "response_text": "Let's break down the statements and analyze them step-by-step:\n\n1.  **\"Every person who likes coffee drinks it daily.\"**\n    *   This can be rephrased as: If a person likes coffee, then they drink it daily.\n    *   It does *not* mean: If a person drinks coffee daily, then they like it. (This is the fallacy of affirming the consequent).\n\n2.  **\"Some people who drink coffee daily do not like it.\"**\n    *   This is a crucial statement. It explicitly tells us that there's a group of people who consu...",
+      "ground_truth": "Cannot be determined - insufficient information",
+      "problem_notes": "Tests handling of underspecification",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_03_gemini-2.5-flash": {
+      "problem_id": "folio_03",
+      "model": "gemini-2.5-flash",
+      "category": "folio_edge_cases",
+      "problem_text": "All birds can fly except penguins and ostriches.\nTweety is a bird.\nPenguins live in cold climates.\nTweety does not live in a cold climate.\n\nCan Tweety fly?",
+      "response_text": "This is a logical deduction problem. Let's break it down step-by-step.\n\n**1. Identify the Core Rule for Flying:**\n*   \"All birds can fly except penguins and ostriches.\"\n*   This means for Tweety to fly, Tweety must be a bird *and* not a penguin *and* not an ostrich.\n\n**2. Check if Tweety is a Bird:**\n*   \"Tweety is a bird.\"\n*   This satisfies the first condition. Now we need to check the exceptions.\n\n**3. Check if Tweety is a Penguin:**\n*   \"Penguins live in cold climates.\"\n*   \"Tweety does not ...",
+      "ground_truth": "Cannot be determined - Tweety might be an ostrich",
+      "problem_notes": "Tests closed-world vs open-world reasoning",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_04_gemini-2.5-flash": {
+      "problem_id": "folio_04",
+      "model": "gemini-2.5-flash",
+      "category": "folio_edge_cases",
+      "problem_text": "Most software engineers know at least one programming language.\nAll people who know at least one programming language can write code.\nSarah is a software engineer.\nEveryone who can write code has written a program.\n\nHas Sarah written a program?",
+      "response_text": "Let's break this down step-by-step using the given information:\n\n1.  **Sarah is a software engineer.** (Given)\n\n2.  **Most software engineers know at least one programming language.** (Given)\n    *   **Reasoning:** The word \"most\" is key here. It means \"the majority,\" but it *does not* mean \"all.\" Therefore, based *only* on this statement, we cannot definitively conclude that Sarah (as a specific software engineer) knows at least one programming language. There could be some software engineers w...",
+      "ground_truth": "Cannot be determined - 'most' is not 'all'",
+      "problem_notes": "Tests quantifier ambiguity - 'most' vs 'all'",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_05_gemini-2.5-flash": {
+      "problem_id": "folio_05",
+      "model": "gemini-2.5-flash",
+      "category": "folio_edge_cases",
+      "problem_text": "No vegetarian eats meat.\nSome athletes are vegetarians.\nAll marathon runners are athletes.\nTom is a marathon runner who does not eat meat.\n\nIs Tom a vegetarian?",
+      "response_text": "Let's break down the problem statement by statement and apply logical reasoning.\n\n**Given Information:**\n\n1.  **No vegetarian eats meat.** (This means: If someone is a vegetarian, they do not eat meat.)\n2.  **Some athletes are vegetarians.** (This means: There's an overlap between athletes and vegetarians, but not all athletes are vegetarians, and not all vegetarians are athletes.)\n3.  **All marathon runners are athletes.** (This means: The set of marathon runners is a subset of the set of athle...",
+      "ground_truth": "Cannot be determined - not eating meat doesn't imply vegetarian",
+      "problem_notes": "Tests necessary vs sufficient conditions",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    },
+    "folio_06_gemini-2.5-flash": {
+      "problem_id": "folio_06",
+      "model": "gemini-2.5-flash",
+      "category": "folio_edge_cases",
+      "problem_text": "Every student who passes the exam studied for at least 10 hours.\nSome students who studied for at least 10 hours did not pass.\nLisa studied for 12 hours.\nAll students who studied for more than 15 hours passed.\nStudents either passed or failed, there is no other outcome.\n\nDid Lisa pass the exam?",
+      "response_text": "Let's break down the information given to determine if Lisa passed the exam.\n\n**Information provided:**\n\n1.  **\"Every student who passes the exam studied for at least 10 hours.\"**\n    *   This means: If a student passed, they *must* have studied $\\ge$ 10 hours.\n    *   It *does not* mean: If a student studied $\\ge$ 10 hours, they passed.\n\n2.  **\"Some students who studied for at least 10 hours did not pass.\"**\n    *   This is a crucial point. It explicitly states that studying $\\ge$ 10 hours is *...",
+      "ground_truth": "Cannot be determined - studied 10+ hours is necessary but not sufficient",
+      "problem_notes": "Tests reasoning with thresholds and exceptions",
+      "is_correct": null,
+      "expresses_uncertainty": null,
+      "failure_mode": null,
+      "notes": ""
+    }
+  }
+}
