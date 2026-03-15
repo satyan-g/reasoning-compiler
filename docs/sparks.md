@@ -1006,3 +1006,53 @@ Existing datasets cover at most two levels, and formulations are usually LLM-gen
 
 **Related datasets to build on:** ZebraLogic, FOLIO, NL4Opt, ProverQA, Logic-LM benchmarks.
 
+---
+
+## Spark: RL for unsupervised FRL generation (2026-03-14)
+
+**Triggered by:** Realizing that Z3 + the independent verifier give you a free, binary, structured reward signal — no human labels needed.
+
+**The setup:**
+```
+LLM generates FRL from NL problem
+        │
+        ▼
+    Z3 solves the FRL
+        │
+        ├── correct answer?  → reward +1
+        ├── wrong answer?    → reward -1, feedback: which constraints differ
+        └── UNSAT?           → reward -1, feedback: UNSAT core (which constraints conflict)
+        │
+        ▼
+    LLM tries again (feedback is in FRL, not NL — precise, no lossy translation)
+```
+
+**Why this works:**
+- The reward signal is **binary and verifiable** — not a fuzzy LLM-as-judge score
+- The error signal is **structured** — UNSAT cores tell you *which* constraints are wrong
+- The FRL format is **compact** — smaller action space than free-form code generation
+- You can generate **unlimited training signal** — ZebraLogic produces arbitrary puzzles programmatically
+- The verifier is **independent of the model** — no reward hacking possible
+
+**Analogy:** This is the same structure as code generation RL (generate code → run tests → reward), but for constraint formalization. AlphaCode generates programs and tests them. We generate FRL and verify it.
+
+**What you need:**
+1. Problems with known answers (ZebraLogic 1K, Puzzle Baron, synthetic generation)
+2. LLM that generates FRL from NL (start with prompted, no fine-tuning)
+3. Existing pipeline: FRL → Z3 → verify against expected answer ✓ (already built)
+4. Feedback loop: format solver errors as FRL-language feedback to the LLM
+
+**Practical first step (before any RL):**
+Prompted loop. Take 10 ZebraLogic problems, prompt an LLM to output FRL, run through the pipeline, see what breaks. This tells you:
+- Whether the FRL schema is LLM-friendly (can the model produce valid FRL?)
+- What error patterns emerge (missing constraints? wrong entity types? bad provenance?)
+- Whether the feedback loop is informative (does the model improve on retry with UNSAT core feedback?)
+
+If the prompted loop works, you have a paper: "FRL generation with verifier-in-the-loop." If it doesn't, the failure modes tell you what to fix in the schema or the prompting.
+
+**RL comes later:** Once the prompted loop is validated, switch to actual RL fine-tuning (PPO/DPO on a small model like Llama 8B). The reward function is already built — it's your pipeline. The training data is unlimited — it's ZebraLogic's generator. The evaluation is rigorous — it's Z3.
+
+**Timeline:** Prompted loop is doable now (1-2 days). RL fine-tuning is Paper 3+ territory.
+
+**Connection to weight compilation spark:** The RL-trained model learns constraint formalization from experience. The weight compilation approach bakes it in by construction. These are complementary — RL handles the fuzzy parts, compilation handles the deterministic parts. The endgame is both together.
+
