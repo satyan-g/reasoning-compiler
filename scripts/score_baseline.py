@@ -23,8 +23,11 @@ def main():
 
     for i, r in enumerate(results):
         print(f"--- [{i+1}] {r['id']} ---")
-        print(f"Expected: {r['expected'][:100]}")
-        print(f"Response: {r['response'][:200]}")
+        print(f"Problem:  {r.get('problem', 'N/A')[:300]}")
+        print()
+        print(f"Expected: {r['expected']}")
+        print()
+        print(f"Response: {r['response'][:500]}")
         print()
 
         while True:

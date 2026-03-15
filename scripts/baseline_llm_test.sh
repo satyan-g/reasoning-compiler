@@ -119,12 +119,17 @@ for i in "${!PROBLEMS[@]}"; do
     echo "Response: $DISPLAY_RESP"
     echo ""
 
-    # Save full result
-    # Escape JSON strings
-    RESP_ESCAPED=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
-    EXPECT_ESCAPED=$(echo "$EXPECT" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
-
-    echo "{\"id\":\"$ID\",\"expected\":$EXPECT_ESCAPED,\"response\":$RESP_ESCAPED}" >> "$RESULTS_FILE"
+    # Save full result with problem text
+    python3 -c "
+import json, sys
+result = {
+    'id': sys.argv[1],
+    'problem': sys.argv[2],
+    'expected': sys.argv[3],
+    'response': sys.argv[4],
+}
+print(json.dumps(result))
+" "$ID" "$PROBLEM" "$EXPECT" "$RESPONSE" >> "$RESULTS_FILE"
 
     sleep "$RATE_LIMIT"
 done
