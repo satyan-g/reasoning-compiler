@@ -956,3 +956,53 @@ If you can compile a reasoning compiler into portable weight modules, you ship a
 
 **Related work to check:** Percepta (weight compilation), model stitching, representation similarity (CKA, SVCCA), adapter portability, LLaMA-Adapter, side-tuning.
 
+---
+
+## Spark: Full Pipeline Trace Dataset (2026-03-14)
+
+**Triggered by:** Survey of existing reasoning trace datasets reveals a clear gap.
+
+**The gap:** No dataset captures ground-truth annotations at all three levels of reasoning:
+1. **Formulation** — NL → formal representation with provenance (which NL span → which constraint, implicit constraints flagged)
+2. **Planning** — strategy selection (solve directly / decompose / relax-and-tighten) with rationale
+3. **Execution** — solver calls and results in formal language, backtracking decisions, certificates
+
+Existing datasets cover at most two levels, and formulations are usually LLM-generated (not ground-truth). See `papers/references/reasoning_trace_datasets_survey.md` for full survey.
+
+**What the dataset would contain per problem:**
+- NL problem text
+- FRL formulation with per-constraint provenance to NL spans
+- Implicit constraint annotations (constraints inferred, not stated)
+- Planning trace: strategy chosen, decomposition if any
+- Execution trace: sequence of FRL solver calls, FRL responses (witness/UNSAT core), backtracking decisions
+- Final answer + independently verified certificate
+- Fertility score (tokens per constraint)
+
+**Why this is publishable on its own:**
+- NeurIPS Datasets & Benchmarks track, or ACL resource paper
+- Establishes FRL as an annotation standard others can adopt
+- Provides the first ground-truth benchmark for evaluating full reasoning pipelines (not just final answers)
+- Natural precursor to the compiler paper — "here's the data, here's what we learned, here's what a compiler needs to handle"
+
+**Build path:**
+1. Start from existing problems: ZebraLogic (1K logic grids), FOLIO (1.4K FOL), NL4Opt (1.1K optimization)
+2. Phase A: Hand-annotate 50 problems with full FRL + solver traces (validates schema)
+3. Phase B: LLM-draft FRL for next 200, human verify and correct (gives ground-truth + error analysis)
+4. Phase C: Release dataset + annotation schema + tooling
+
+**Strategic value:**
+- A dataset paper is faster to write than a systems paper
+- Other researchers build on your data → your formalism gets adopted
+- The annotation process itself generates insights about where NL→formal translation breaks down
+- Directly feeds the compiler paper and the weight compilation research
+
+**Infrastructure already built:**
+- FRL v0 schema with provenance tracking ✓
+- Z3 compiler with tracked assertions ✓
+- Independent verifier ✓
+- 5 worked examples ✓
+
+**Timeline:** Could start Phase A immediately (50 hand-annotated problems). Dataset paper draft in parallel with compiler work.
+
+**Related datasets to build on:** ZebraLogic, FOLIO, NL4Opt, ProverQA, Logic-LM benchmarks.
+
