@@ -1,29 +1,9 @@
-"""Attempt to formalize the Zebra Puzzle in FRL.
+"""Zebra Puzzle formalized in FRL — full pipeline test.
 
-This is the first "LLM generates FRL" test. The FRL below is what Claude
-(acting as the NL→FRL compiler) produces from the Zebra Puzzle's NL clues.
+All 15 clues expressed using FRL v0 + the three new constraint types
+(CO_OCCURRENCE, ADJACENT, RIGHT_OF).
 
-Expected outcome: some clues won't fit the v0 schema. That's the point —
-we discover what needs extending.
-
-Modeling choice:
-  Each category maps its values to a House position.
-    nat: Nationality → House
-    col: Color → House
-    dri: Drink → House
-    smo: Smoke → House
-    pet: Pet → House
-
-  "Englishman in red house" = nat(English) and col(Red) are the same house.
-  "Norwegian in first house" = nat(Norwegian) == H1 → ASSIGNMENT.
-  "Green right of ivory" = col(Green) is one position right of col(Ivory) → POSITIONAL.
-  "Next to" = |pos_a - pos_b| == 1 → ADJACENT.
-
-Schema gaps discovered:
-  1. CO_OCCURRENCE — two functions map to the same house (no current constraint type)
-  2. ADJACENT — positional adjacency (|f(a) - g(b)| == 1)
-  3. RIGHT_OF — positional ordering (f(a) == g(b) + 1)
-  4. Arithmetic on enum values — House positions need ordering
+Source: https://en.wikipedia.org/wiki/Zebra_Puzzle
 """
 
 from src.frl import (
@@ -37,10 +17,12 @@ from src.frl import (
     QueryKind,
     validate,
 )
+from src.compiler.to_z3 import solve
+from src.compiler.verify import verify_witness
 
 
 def _zebra_frl():
-    """Best-effort FRL for the Zebra Puzzle using current v0 schema."""
+    """Complete FRL for the Zebra Puzzle — all 15 clues."""
     return FRLInstance(
         nl_text=(
             "There are five houses in a row. "
@@ -75,92 +57,168 @@ def _zebra_frl():
             FunctionVar("pet", "Pet", "House"),
         ],
         constraints=[
-            # Each category: all different houses (5 values → 5 houses, bijection)
+            # Implicit: each category is a bijection (all different houses)
             Constraint(kind=ConstraintKind.UNIQUENESS, var="nat",
-                       provenance=Provenance("Five houses, each nationality in one")),
+                       provenance=Provenance("Five houses, each nationality in one", implicit=True)),
             Constraint(kind=ConstraintKind.UNIQUENESS, var="col",
-                       provenance=Provenance("Each house a different color")),
+                       provenance=Provenance("Each house a different color", implicit=True)),
             Constraint(kind=ConstraintKind.UNIQUENESS, var="dri",
-                       provenance=Provenance("Each house a different drink")),
+                       provenance=Provenance("Each house a different drink", implicit=True)),
             Constraint(kind=ConstraintKind.UNIQUENESS, var="smo",
-                       provenance=Provenance("Each house a different smoke")),
+                       provenance=Provenance("Each house a different smoke", implicit=True)),
             Constraint(kind=ConstraintKind.UNIQUENESS, var="pet",
-                       provenance=Provenance("Each house a different pet")),
+                       provenance=Provenance("Each house a different pet", implicit=True)),
 
-            # Clue 10: Norwegian in first house → ASSIGNMENT (expressible!)
-            Constraint(kind=ConstraintKind.ASSIGNMENT, var="nat",
-                       entity="Norwegian", value="H1",
-                       provenance=Provenance("The Norwegian lives in the first house")),
+            # Clue 2: The Englishman lives in the red house
+            Constraint(kind=ConstraintKind.CO_OCCURRENCE,
+                       var1="nat", entity1="English", var2="col", entity2="Red",
+                       provenance=Provenance("The Englishman lives in the red house")),
 
-            # Clue 9: Milk in the middle house → ASSIGNMENT (expressible!)
+            # Clue 3: The Spaniard owns the dog
+            Constraint(kind=ConstraintKind.CO_OCCURRENCE,
+                       var1="nat", entity1="Spaniard", var2="pet", entity2="Dog",
+                       provenance=Provenance("The Spaniard owns the dog")),
+
+            # Clue 4: Coffee is drunk in the green house
+            Constraint(kind=ConstraintKind.CO_OCCURRENCE,
+                       var1="dri", entity1="Coffee", var2="col", entity2="Green",
+                       provenance=Provenance("Coffee is drunk in the green house")),
+
+            # Clue 5: The Ukrainian drinks tea
+            Constraint(kind=ConstraintKind.CO_OCCURRENCE,
+                       var1="nat", entity1="Ukrainian", var2="dri", entity2="Tea",
+                       provenance=Provenance("The Ukrainian drinks tea")),
+
+            # Clue 6: The green house is immediately to the right of the ivory house
+            Constraint(kind=ConstraintKind.RIGHT_OF,
+                       var1="col", entity1="Green", var2="col", entity2="Ivory",
+                       provenance=Provenance("The green house is immediately to the right of the ivory house")),
+
+            # Clue 7: The Old Gold smoker owns snails
+            Constraint(kind=ConstraintKind.CO_OCCURRENCE,
+                       var1="smo", entity1="OldGold", var2="pet", entity2="Snails",
+                       provenance=Provenance("The Old Gold smoker owns snails")),
+
+            # Clue 8: Kools are smoked in the yellow house
+            Constraint(kind=ConstraintKind.CO_OCCURRENCE,
+                       var1="smo", entity1="Kools", var2="col", entity2="Yellow",
+                       provenance=Provenance("Kools are smoked in the yellow house")),
+
+            # Clue 9: Milk is drunk in the middle house
             Constraint(kind=ConstraintKind.ASSIGNMENT, var="dri",
                        entity="Milk", value="H3",
                        provenance=Provenance("Milk is drunk in the middle house")),
 
-            # --- SCHEMA GAPS BELOW ---
-            # The remaining clues need constraint types we don't have yet.
-            # Marking them with the gap type.
+            # Clue 10: The Norwegian lives in the first house
+            Constraint(kind=ConstraintKind.ASSIGNMENT, var="nat",
+                       entity="Norwegian", value="H1",
+                       provenance=Provenance("The Norwegian lives in the first house")),
 
-            # Clue 2: Englishman lives in red house → CO_OCCURRENCE(nat, English, col, Red)
-            # Clue 3: Spaniard owns dog → CO_OCCURRENCE(nat, Spaniard, pet, Dog)
-            # Clue 4: Coffee in green house → CO_OCCURRENCE(dri, Coffee, col, Green)
-            # Clue 5: Ukrainian drinks tea → CO_OCCURRENCE(nat, Ukrainian, dri, Tea)
-            # Clue 7: Old Gold smoker owns snails → CO_OCCURRENCE(smo, OldGold, pet, Snails)
-            # Clue 8: Kools in yellow house → CO_OCCURRENCE(smo, Kools, col, Yellow)
-            # Clue 13: Lucky Strike smoker drinks OJ → CO_OCCURRENCE(smo, LuckyStrike, dri, OJ)
-            # Clue 14: Japanese smokes Parliaments → CO_OCCURRENCE(nat, Japanese, smo, Parliaments)
+            # Clue 11: The Chesterfields smoker lives next to the fox owner
+            Constraint(kind=ConstraintKind.ADJACENT,
+                       var1="smo", entity1="Chesterfields", var2="pet", entity2="Fox",
+                       provenance=Provenance("The Chesterfields smoker lives next to the fox owner")),
 
-            # Clue 6: Green immediately right of ivory → RIGHT_OF(col, Green, col, Ivory)
-            # Clue 11: Chesterfields next to fox → ADJACENT(smo, Chesterfields, pet, Fox)
-            # Clue 12: Kools next to horse → ADJACENT(smo, Kools, pet, Horse)
-            # Clue 15: Norwegian next to blue → ADJACENT(nat, Norwegian, col, Blue)
+            # Clue 12: Kools are smoked next to the house where the horse is kept
+            Constraint(kind=ConstraintKind.ADJACENT,
+                       var1="smo", entity1="Kools", var2="pet", entity2="Horse",
+                       provenance=Provenance("Kools are smoked next to the house where the horse is kept")),
+
+            # Clue 13: The Lucky Strike smoker drinks orange juice
+            Constraint(kind=ConstraintKind.CO_OCCURRENCE,
+                       var1="smo", entity1="LuckyStrike", var2="dri", entity2="OJ",
+                       provenance=Provenance("The Lucky Strike smoker drinks orange juice")),
+
+            # Clue 14: The Japanese smokes Parliaments
+            Constraint(kind=ConstraintKind.CO_OCCURRENCE,
+                       var1="nat", entity1="Japanese", var2="smo", entity2="Parliaments",
+                       provenance=Provenance("The Japanese smokes Parliaments")),
+
+            # Clue 15: The Norwegian lives next to the blue house
+            Constraint(kind=ConstraintKind.ADJACENT,
+                       var1="nat", entity1="Norwegian", var2="col", entity2="Blue",
+                       provenance=Provenance("The Norwegian lives next to the blue house")),
         ],
         query=Query(kind=QueryKind.FIND_ASSIGNMENT,
                     description="Who owns the zebra? Who drinks water?"),
     )
 
 
-def test_zebra_frl_validates_partial():
-    """The partial FRL (only expressible constraints) should validate."""
+def test_zebra_frl_validates():
+    """All constraints should validate against the schema."""
     frl = _zebra_frl()
     errors = validate(frl)
     assert errors == [], errors
 
 
-def test_zebra_frl_schema_gaps():
-    """Document exactly what's missing from FRL v0 for the Zebra Puzzle."""
-    gaps = {
-        "CO_OCCURRENCE": {
-            "description": "Two functions map to the same value (same house)",
-            "example": "nat(English) == col(Red)",
-            "clues": [2, 3, 4, 5, 7, 8, 13, 14],
-            "count": 8,
-        },
-        "ADJACENT": {
-            "description": "Two function outputs differ by exactly 1 (next-to)",
-            "example": "|smo(Chesterfields) - pet(Fox)| == 1",
-            "clues": [11, 12, 15],
-            "count": 3,
-        },
-        "RIGHT_OF": {
-            "description": "One function output is exactly 1 greater (immediately right)",
-            "example": "col(Green) == col(Ivory) + 1",
-            "clues": [6],
-            "count": 1,
-        },
-    }
+def test_zebra_frl_solves():
+    """Solve the Zebra Puzzle through the full FRL pipeline."""
+    frl = _zebra_frl()
+    result = solve(frl)
+    assert result.sat is True
+    assert result.witness is not None
 
-    total_clues = 15
-    # Clue 1 ("there are five houses") is structural, not a constraint.
-    # Clues 9, 10 are ASSIGNMENT (expressible). That's 2 of 14 non-structural clues.
-    # UNIQUENESS constraints are implicit (not clues).
-    expressible_clues = 2  # clues 9 and 10
-    inexpressible = sum(g["count"] for g in gaps.values())
+    w = result.witness
 
-    assert expressible_clues + inexpressible == total_clues - 1  # minus clue 1 (structural)
-    assert inexpressible == 12  # 12 of 14 constraint clues can't be expressed in v0
+    # Find who owns the zebra and who drinks water
+    zebra_house = w["pet"]["Zebra"]
+    water_house = w["dri"]["Water"]
 
-    # Key finding: v0 handles 2/14 = 14% of Zebra Puzzle constraint clues.
-    # CO_OCCURRENCE is the biggest gap (8 clues).
-    # These are all "X and Y are in the same house" constraints.
-    return gaps
+    # Find nationality in those houses
+    nat_by_house = {v: k for k, v in w["nat"].items()}
+    zebra_owner = nat_by_house[zebra_house]
+    water_drinker = nat_by_house[water_house]
+
+    assert zebra_owner == "Japanese"
+    assert water_drinker == "Norwegian"
+
+
+def test_zebra_frl_verify():
+    """Independently verify the witness against all FRL constraints."""
+    frl = _zebra_frl()
+    result = solve(frl)
+    vr = verify_witness(frl, result.witness)
+    assert vr.valid is True, vr.violations
+
+
+def test_zebra_frl_full_solution():
+    """Verify the complete house-by-house solution."""
+    frl = _zebra_frl()
+    result = solve(frl)
+    w = result.witness
+
+    # Expected: each value maps to its house
+    # House 1: Norwegian, Yellow, Water, Kools, Fox
+    assert w["nat"]["Norwegian"] == "H1"
+    assert w["col"]["Yellow"] == "H1"
+    assert w["dri"]["Water"] == "H1"
+    assert w["smo"]["Kools"] == "H1"
+    assert w["pet"]["Fox"] == "H1"
+
+    # House 2: Ukrainian, Blue, Tea, Chesterfields, Horse
+    assert w["nat"]["Ukrainian"] == "H2"
+    assert w["col"]["Blue"] == "H2"
+    assert w["dri"]["Tea"] == "H2"
+    assert w["smo"]["Chesterfields"] == "H2"
+    assert w["pet"]["Horse"] == "H2"
+
+    # House 3: English, Red, Milk, OldGold, Snails
+    assert w["nat"]["English"] == "H3"
+    assert w["col"]["Red"] == "H3"
+    assert w["dri"]["Milk"] == "H3"
+    assert w["smo"]["OldGold"] == "H3"
+    assert w["pet"]["Snails"] == "H3"
+
+    # House 4: Spaniard, Ivory, OJ, LuckyStrike, Dog
+    assert w["nat"]["Spaniard"] == "H4"
+    assert w["col"]["Ivory"] == "H4"
+    assert w["dri"]["OJ"] == "H4"
+    assert w["smo"]["LuckyStrike"] == "H4"
+    assert w["pet"]["Dog"] == "H4"
+
+    # House 5: Japanese, Green, Coffee, Parliaments, Zebra
+    assert w["nat"]["Japanese"] == "H5"
+    assert w["col"]["Green"] == "H5"
+    assert w["dri"]["Coffee"] == "H5"
+    assert w["smo"]["Parliaments"] == "H5"
+    assert w["pet"]["Zebra"] == "H5"

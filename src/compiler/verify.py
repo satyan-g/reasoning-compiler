@@ -9,6 +9,7 @@ from src.frl.schema import (
     CompareOp,
     Constraint,
     ConstraintKind,
+    EntityType,
     FRLInstance,
 )
 
@@ -32,18 +33,29 @@ def verify_witness(frl: FRLInstance, witness: dict[str, dict[str, str]]) -> Veri
     Returns:
         VerifyResult with valid=True if all constraints are satisfied.
     """
+    # Build ordering maps for positional constraints
+    orderings = {et.name: {v: i for i, v in enumerate(et.values)} for et in frl.entity_types}
+    # Build func_name -> codomain name map
+    codomain_map = {fv.name: fv.codomain for fv in frl.functions}
+
     violations = []
 
     for i, c in enumerate(frl.constraints):
         label = f"constraint[{i}] ({c.kind.value})"
-        result = _check_constraint(c, witness, label)
+        result = _check_constraint(c, witness, label, orderings, codomain_map)
         if result is not None:
             violations.append(result)
 
     return VerifyResult(valid=len(violations) == 0, violations=violations)
 
 
-def _check_constraint(c: Constraint, witness: dict[str, dict[str, str]], label: str) -> str | None:
+def _check_constraint(
+    c: Constraint,
+    witness: dict[str, dict[str, str]],
+    label: str,
+    orderings: dict[str, dict[str, int]],
+    codomain_map: dict[str, str],
+) -> str | None:
     """Check one constraint. Returns error string or None if satisfied."""
 
     if c.kind == ConstraintKind.EXCLUSION:
@@ -104,6 +116,44 @@ def _check_constraint(c: Constraint, witness: dict[str, dict[str, str]], label: 
             return f"{label}: {count} entities assigned to {c.value}, expected <= {c.card_value}"
         elif c.card_op == CardinalityOp.EXACTLY and count != c.card_value:
             return f"{label}: {count} entities assigned to {c.value}, expected == {c.card_value}"
+        return None
+
+    elif c.kind == ConstraintKind.CO_OCCURRENCE:
+        val1 = witness[c.var1][c.entity1]
+        val2 = witness[c.var2][c.entity2]
+        if val1 != val2:
+            return (
+                f"{label}: {c.var1}({c.entity1}) == {val1}, "
+                f"{c.var2}({c.entity2}) == {val2}, expected same value"
+            )
+        return None
+
+    elif c.kind == ConstraintKind.ADJACENT:
+        val1 = witness[c.var1][c.entity1]
+        val2 = witness[c.var2][c.entity2]
+        codomain = codomain_map[c.var1]
+        ordering = orderings[codomain]
+        idx1 = ordering[val1]
+        idx2 = ordering[val2]
+        if abs(idx1 - idx2) != 1:
+            return (
+                f"{label}: {c.var1}({c.entity1}) at position {idx1}, "
+                f"{c.var2}({c.entity2}) at position {idx2}, expected adjacent"
+            )
+        return None
+
+    elif c.kind == ConstraintKind.RIGHT_OF:
+        val1 = witness[c.var1][c.entity1]
+        val2 = witness[c.var2][c.entity2]
+        codomain = codomain_map[c.var1]
+        ordering = orderings[codomain]
+        idx1 = ordering[val1]
+        idx2 = ordering[val2]
+        if idx1 != idx2 + 1:
+            return (
+                f"{label}: {c.var1}({c.entity1}) at position {idx1}, "
+                f"{c.var2}({c.entity2}) at position {idx2}, expected right_of (idx1 == idx2 + 1)"
+            )
         return None
 
     else:

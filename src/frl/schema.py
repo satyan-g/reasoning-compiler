@@ -63,6 +63,9 @@ class ConstraintKind(Enum):
     UNIQUENESS = "uniqueness"
     CONDITIONAL = "conditional"
     CARDINALITY = "cardinality"
+    CO_OCCURRENCE = "co_occurrence"
+    ADJACENT = "adjacent"
+    RIGHT_OF = "right_of"
 
 
 class CompareOp(Enum):
@@ -88,6 +91,9 @@ class Constraint:
     CONDITIONAL: if condition_var(condition_entity) condition_op condition_value
                  then consequence_var(consequence_entity) consequence_op consequence_value
     CARDINALITY: |{e : var(e) == value}| card_op card_value
+    CO_OCCURRENCE: var1(entity1) == var2(entity2) (same codomain value)
+    ADJACENT: |index(var1(entity1)) - index(var2(entity2))| == 1
+    RIGHT_OF: index(var1(entity1)) == index(var2(entity2)) + 1
     """
 
     kind: ConstraintKind
@@ -114,6 +120,12 @@ class Constraint:
     # CARDINALITY
     card_op: Optional[CardinalityOp] = None
     card_value: Optional[int] = None
+
+    # CO_OCCURRENCE, ADJACENT, RIGHT_OF
+    var1: Optional[str] = None
+    entity1: Optional[str] = None
+    var2: Optional[str] = None
+    entity2: Optional[str] = None
 
 
 # --- Query ---
@@ -206,6 +218,18 @@ def validate(frl: FRLInstance) -> list[str]:
                 errors.append(f"{label}: missing card_op")
             if c.card_value is None:
                 errors.append(f"{label}: missing card_value")
+
+        elif c.kind in (ConstraintKind.CO_OCCURRENCE, ConstraintKind.ADJACENT, ConstraintKind.RIGHT_OF):
+            # var1(entity1) and var2(entity2) — entity is in domain, no value to check
+            _check_var_entity_value(c.var1, c.entity1, None, f"{label} var1")
+            _check_var_entity_value(c.var2, c.entity2, None, f"{label} var2")
+            # Both functions must share the same codomain
+            if c.var1 in func_map and c.var2 in func_map:
+                if func_map[c.var1].codomain != func_map[c.var2].codomain:
+                    errors.append(
+                        f"{label}: var1 codomain '{func_map[c.var1].codomain}' "
+                        f"!= var2 codomain '{func_map[c.var2].codomain}'"
+                    )
 
     return errors
 

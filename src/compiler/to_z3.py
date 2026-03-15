@@ -25,6 +25,8 @@ class Z3Context:
     functions: dict[str, z3.FuncDeclRef] = field(default_factory=dict)
     solver: z3.Solver = field(default_factory=z3.Solver)
     constraint_labels: dict[str, int] = field(default_factory=dict)
+    # Maps sort_name -> {value_name -> integer index} for ordinal comparisons
+    sort_ordering: dict[str, dict[str, int]] = field(default_factory=dict)
 
 
 @dataclass
@@ -40,7 +42,7 @@ def compile_to_z3(frl: FRLInstance) -> Z3Context:
     """Compile an FRL instance to Z3 constraints. Returns context for solving."""
     ctx = Z3Context()
 
-    # Create enum sorts
+    # Create enum sorts and ordering
     for et in frl.entity_types:
         dt = z3.Datatype(et.name)
         for v in et.values:
@@ -48,8 +50,10 @@ def compile_to_z3(frl: FRLInstance) -> Z3Context:
         sort = dt.create()
         ctx.sorts[et.name] = sort
         ctx.sort_constructors[et.name] = {}
-        for v in et.values:
+        ctx.sort_ordering[et.name] = {}
+        for i, v in enumerate(et.values):
             ctx.sort_constructors[et.name][v] = getattr(sort, v)
+            ctx.sort_ordering[et.name][v] = i
 
     # Create function variables
     for fv in frl.functions:
@@ -155,8 +159,63 @@ def _compile_constraint(c: Constraint, ctx: Z3Context) -> z3.BoolRef:
         else:
             raise ValueError(f"Unknown cardinality op: {c.card_op}")
 
+    elif c.kind == ConstraintKind.CO_OCCURRENCE:
+        # var1(entity1) == var2(entity2) — same codomain value
+        func1 = ctx.functions[c.var1]
+        func2 = ctx.functions[c.var2]
+        e1 = ctx.sort_constructors[_domain_of(c.var1, ctx)][c.entity1]
+        e2 = ctx.sort_constructors[_domain_of(c.var2, ctx)][c.entity2]
+        return func1(e1) == func2(e2)
+
+    elif c.kind == ConstraintKind.ADJACENT:
+        # |index(var1(entity1)) - index(var2(entity2))| == 1
+        return _positional_constraint(c, ctx, adjacent=True)
+
+    elif c.kind == ConstraintKind.RIGHT_OF:
+        # index(var1(entity1)) == index(var2(entity2)) + 1
+        return _positional_constraint(c, ctx, adjacent=False)
+
     else:
         raise ValueError(f"Unknown constraint kind: {c.kind}")
+
+
+def _positional_constraint(c: Constraint, ctx: Z3Context, adjacent: bool) -> z3.BoolRef:
+    """Compile ADJACENT or RIGHT_OF using integer ordering of codomain values.
+
+    Maps enum values to their index in the EntityType.values list, then
+    compares positions arithmetically.
+    """
+    func1 = ctx.functions[c.var1]
+    func2 = ctx.functions[c.var2]
+    e1 = ctx.sort_constructors[_domain_of(c.var1, ctx)][c.entity1]
+    e2 = ctx.sort_constructors[_domain_of(c.var2, ctx)][c.entity2]
+    codomain = _codomain_of(c.var1, ctx)
+    ordering = ctx.sort_ordering[codomain]
+
+    # Build integer expressions for positions using If-then-else chains
+    pos1 = _enum_to_int(func1(e1), codomain, ctx)
+    pos2 = _enum_to_int(func2(e2), codomain, ctx)
+
+    if adjacent:
+        # |pos1 - pos2| == 1
+        diff = pos1 - pos2
+        return z3.Or(diff == 1, diff == -1)
+    else:
+        # pos1 == pos2 + 1 (var1's entity is one position right of var2's entity)
+        return pos1 == pos2 + 1
+
+
+def _enum_to_int(expr: z3.ExprRef, sort_name: str, ctx: Z3Context) -> z3.ArithRef:
+    """Convert an enum expression to an integer using If-then-else chain."""
+    ordering = ctx.sort_ordering[sort_name]
+    constructors = ctx.sort_constructors[sort_name]
+
+    # Build chain: If(expr == H1, 0, If(expr == H2, 1, ...))
+    items = list(ordering.items())
+    result = z3.IntVal(items[-1][1])  # default: last value's index
+    for name, idx in reversed(items[:-1]):
+        result = z3.If(expr == constructors[name], idx, result)
+    return result
 
 
 def _extract_witness(frl: FRLInstance, ctx: Z3Context, model: z3.ModelRef) -> dict[str, dict[str, str]]:
