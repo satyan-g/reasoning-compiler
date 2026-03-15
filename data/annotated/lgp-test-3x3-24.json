@@ -1,0 +1,294 @@
+{
+  "id": "lgp-test-3x3-24",
+  "source": "ZebraLogic (allenai/ZebraLogicBench)",
+  "size": "3x3",
+  "problem": {
+    "nl_text": "There are 3 houses, numbered 1 to 3 from left to right. Each house is occupied by a different person. Characteristics: Name (Peter, Eric, Arnold), Color (red, white, yellow), Child (Fred, Meredith, Bella). Clues: 1. Arnold is the person whose favorite color is red. 2. The person whose child is named Fred is somewhere to the left of Eric. 3. The person whose favorite color is red is in the second house. 4. The person whose child is named Bella is in the first house. 5. The person who loves white is the person whose child is named Meredith."
+  },
+  "formulation": {
+    "frl": {
+      "entity_types": [
+        {
+          "name": "House",
+          "values": [
+            "H1",
+            "H2",
+            "H3"
+          ]
+        },
+        {
+          "name": "Name",
+          "values": [
+            "Peter",
+            "Eric",
+            "Arnold"
+          ]
+        },
+        {
+          "name": "Color",
+          "values": [
+            "Red",
+            "White",
+            "Yellow"
+          ]
+        },
+        {
+          "name": "Child",
+          "values": [
+            "Fred",
+            "Meredith",
+            "Bella"
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "name",
+          "domain": "Name",
+          "codomain": "House"
+        },
+        {
+          "name": "color",
+          "domain": "Color",
+          "codomain": "House"
+        },
+        {
+          "name": "child",
+          "domain": "Child",
+          "codomain": "House"
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "uniqueness",
+          "provenance": {
+            "text": "Each house occupied by different person",
+            "implicit": true
+          },
+          "var": "name",
+          "condition_op": "==",
+          "consequence_op": "=="
+        },
+        {
+          "kind": "uniqueness",
+          "provenance": {
+            "text": "Each house has unique color",
+            "implicit": true
+          },
+          "var": "color",
+          "condition_op": "==",
+          "consequence_op": "=="
+        },
+        {
+          "kind": "uniqueness",
+          "provenance": {
+            "text": "Each house has unique child",
+            "implicit": true
+          },
+          "var": "child",
+          "condition_op": "==",
+          "consequence_op": "=="
+        },
+        {
+          "kind": "co_occurrence",
+          "provenance": {
+            "text": "Clue 1: Arnold is the person whose favorite color is red",
+            "implicit": false
+          },
+          "condition_op": "==",
+          "consequence_op": "==",
+          "var1": "name",
+          "entity1": "Arnold",
+          "var2": "color",
+          "entity2": "Red"
+        },
+        {
+          "kind": "assignment",
+          "provenance": {
+            "text": "Clue 3: The person whose favorite color is red is in the second house",
+            "implicit": false
+          },
+          "var": "color",
+          "entity": "Red",
+          "value": "H2",
+          "condition_op": "==",
+          "consequence_op": "=="
+        },
+        {
+          "kind": "assignment",
+          "provenance": {
+            "text": "Clue 4: The person whose child is named Bella is in the first house",
+            "implicit": false
+          },
+          "var": "child",
+          "entity": "Bella",
+          "value": "H1",
+          "condition_op": "==",
+          "consequence_op": "=="
+        },
+        {
+          "kind": "co_occurrence",
+          "provenance": {
+            "text": "Clue 5: The person who loves white is the person whose child is named Meredith",
+            "implicit": false
+          },
+          "condition_op": "==",
+          "consequence_op": "==",
+          "var1": "color",
+          "entity1": "White",
+          "var2": "child",
+          "entity2": "Meredith"
+        },
+        {
+          "kind": "exclusion",
+          "provenance": {
+            "text": "Clue 2: Fred's parent is left of Eric, so Eric not in H1",
+            "implicit": false
+          },
+          "var": "name",
+          "entity": "Eric",
+          "value": "H1",
+          "condition_op": "==",
+          "consequence_op": "=="
+        },
+        {
+          "kind": "conditional",
+          "provenance": {
+            "text": "Clue 2: If Eric in H2, Fred must be in H1",
+            "implicit": false
+          },
+          "condition_var": "name",
+          "condition_entity": "Eric",
+          "condition_value": "H2",
+          "condition_op": "==",
+          "consequence_var": "child",
+          "consequence_entity": "Fred",
+          "consequence_value": "H1",
+          "consequence_op": "=="
+        }
+      ],
+      "query": {
+        "kind": "find_assignment",
+        "description": "Assign people, colors, and children to houses"
+      },
+      "nl_text": "There are 3 houses, numbered 1 to 3 from left to right. Each house is occupied by a different person. Characteristics: Name (Peter, Eric, Arnold), Color (red, white, yellow), Child (Fred, Meredith, Bella). Clues: 1. Arnold is the person whose favorite color is red. 2. The person whose child is named Fred is somewhere to the left of Eric. 3. The person whose favorite color is red is in the second house. 4. The person whose child is named Bella is in the first house. 5. The person who loves white is the person whose child is named Meredith.",
+      "metadata": {
+        "source": "ZebraLogic lgp-test-3x3-24",
+        "attempt": 2
+      }
+    },
+    "stats": {
+      "constraint_count": 9,
+      "implicit_constraints": 3,
+      "explicit_constraints": 6,
+      "constraint_types_used": [
+        "assignment",
+        "co_occurrence",
+        "conditional",
+        "exclusion",
+        "uniqueness"
+      ]
+    },
+    "validation_errors": [],
+    "schema_gaps": [
+      "LEFT_OF/BEFORE not available \u2014 clue 2 encoded as EXCLUSION + CONDITIONAL workaround"
+    ]
+  },
+  "solver_result": {
+    "satisfiable": true,
+    "witness": {
+      "name": {
+        "Peter": "H1",
+        "Eric": "H3",
+        "Arnold": "H2"
+      },
+      "color": {
+        "Red": "H2",
+        "White": "H3",
+        "Yellow": "H1"
+      },
+      "child": {
+        "Fred": "H2",
+        "Meredith": "H3",
+        "Bella": "H1"
+      }
+    }
+  },
+  "verification": {
+    "valid": true,
+    "violations": []
+  },
+  "solution": {
+    "H1": {
+      "name": "Peter",
+      "color": "Yellow",
+      "child": "Bella"
+    },
+    "H2": {
+      "name": "Arnold",
+      "color": "Red",
+      "child": "Fred"
+    },
+    "H3": {
+      "name": "Eric",
+      "color": "White",
+      "child": "Meredith"
+    }
+  },
+  "provenance": [
+    {
+      "constraint_id": 0,
+      "kind": "uniqueness",
+      "nl_source": "Each house occupied by different person",
+      "implicit": true
+    },
+    {
+      "constraint_id": 1,
+      "kind": "uniqueness",
+      "nl_source": "Each house has unique color",
+      "implicit": true
+    },
+    {
+      "constraint_id": 2,
+      "kind": "uniqueness",
+      "nl_source": "Each house has unique child",
+      "implicit": true
+    },
+    {
+      "constraint_id": 3,
+      "kind": "co_occurrence",
+      "nl_source": "Clue 1: Arnold is the person whose favorite color is red",
+      "implicit": false
+    },
+    {
+      "constraint_id": 4,
+      "kind": "assignment",
+      "nl_source": "Clue 3: The person whose favorite color is red is in the second house",
+      "implicit": false
+    },
+    {
+      "constraint_id": 5,
+      "kind": "assignment",
+      "nl_source": "Clue 4: The person whose child is named Bella is in the first house",
+      "implicit": false
+    },
+    {
+      "constraint_id": 6,
+      "kind": "co_occurrence",
+      "nl_source": "Clue 5: The person who loves white is the person whose child is named Meredith",
+      "implicit": false
+    },
+    {
+      "constraint_id": 7,
+      "kind": "exclusion",
+      "nl_source": "Clue 2: Fred's parent is left of Eric, so Eric not in H1",
+      "implicit": false
+    },
+    {
+      "constraint_id": 8,
+      "kind": "conditional",
+      "nl_source": "Clue 2: If Eric in H2, Fred must be in H1",
+      "implicit": false
+    }
+  ]
+}
