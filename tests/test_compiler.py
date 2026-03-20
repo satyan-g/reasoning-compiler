@@ -675,6 +675,148 @@ def test_disjunction_complex():
     assert alice_house == "H1" or alice_house == red_house
 
 
+# --- FORALL / EXISTS tests (quantified constraints) ---
+
+
+def test_forall_solve():
+    """FORALL: every person must be in house 1 or house 2 (BOUNDS via quantifier)."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3"]),
+            EntityType("Person", ["Alice", "Bob", "Carol"]),
+        ],
+        functions=[FunctionVar("assign", "Person", "House")],
+        constraints=[
+            Constraint(
+                kind=ConstraintKind.UNIQUENESS, var="assign",
+                provenance=Provenance("all different"),
+            ),
+            # FORALL p ∈ Person: assign(p) ∈ {H1, H2}
+            # This should be UNSAT — 3 people, only 2 allowed houses, uniqueness
+            Constraint(
+                kind=ConstraintKind.FORALL,
+                bind_var="p",
+                bind_domain="Person",
+                body=Constraint(
+                    kind=ConstraintKind.BOUNDS,
+                    var="assign",
+                    entity="p",  # will be substituted with each person
+                    allowed_values=["H1", "H2"],
+                    provenance=Provenance("must be in H1 or H2"),
+                ),
+                provenance=Provenance("every person in H1 or H2"),
+            ),
+        ],
+        query=Query(kind=QueryKind.IS_SATISFIABLE),
+    )
+    result = solve(frl)
+    assert result.sat is False  # pigeonhole: 3 people, 2 houses, uniqueness
+
+
+def test_forall_sat():
+    """FORALL: every person is NOT in house 3 (2 people, 3 houses → SAT)."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3"]),
+            EntityType("Person", ["Alice", "Bob"]),
+        ],
+        functions=[FunctionVar("assign", "Person", "House")],
+        constraints=[
+            Constraint(
+                kind=ConstraintKind.UNIQUENESS, var="assign",
+                provenance=Provenance("all different"),
+            ),
+            Constraint(
+                kind=ConstraintKind.FORALL,
+                bind_var="p",
+                bind_domain="Person",
+                body=Constraint(
+                    kind=ConstraintKind.EXCLUSION,
+                    var="assign",
+                    entity="p",
+                    value="H3",
+                    provenance=Provenance("not in H3"),
+                ),
+                provenance=Provenance("nobody in H3"),
+            ),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    assert result.sat is True
+    assert result.witness["assign"]["Alice"] != "H3"
+    assert result.witness["assign"]["Bob"] != "H3"
+
+
+def test_forall_verify():
+    """Verify FORALL constraint independently."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3"]),
+            EntityType("Person", ["Alice", "Bob"]),
+        ],
+        functions=[FunctionVar("assign", "Person", "House")],
+        constraints=[
+            Constraint(
+                kind=ConstraintKind.UNIQUENESS, var="assign",
+                provenance=Provenance("all different"),
+            ),
+            Constraint(
+                kind=ConstraintKind.FORALL,
+                bind_var="p",
+                bind_domain="Person",
+                body=Constraint(
+                    kind=ConstraintKind.EXCLUSION,
+                    var="assign",
+                    entity="p",
+                    value="H3",
+                    provenance=Provenance("not in H3"),
+                ),
+                provenance=Provenance("nobody in H3"),
+            ),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    vr = verify_witness(frl, result.witness)
+    assert vr.valid is True, vr.violations
+
+
+def test_exists_solve():
+    """EXISTS: at least one person is in house 1."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3"]),
+            EntityType("Person", ["Alice", "Bob", "Carol"]),
+        ],
+        functions=[FunctionVar("assign", "Person", "House")],
+        constraints=[
+            Constraint(
+                kind=ConstraintKind.UNIQUENESS, var="assign",
+                provenance=Provenance("all different"),
+            ),
+            Constraint(
+                kind=ConstraintKind.EXISTS,
+                bind_var="p",
+                bind_domain="Person",
+                body=Constraint(
+                    kind=ConstraintKind.ASSIGNMENT,
+                    var="assign",
+                    entity="p",
+                    value="H1",
+                    provenance=Provenance("in H1"),
+                ),
+                provenance=Provenance("someone is in H1"),
+            ),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    assert result.sat is True
+    # At least one person in H1
+    assert "H1" in result.witness["assign"].values()
+
+
 # --- Verifier negative test ---
 
 

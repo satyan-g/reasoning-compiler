@@ -208,6 +208,27 @@ def _compile_constraint(c: Constraint, ctx: Z3Context) -> z3.BoolRef:
         # Derived: DISTANCE(N=1, directed=True)
         return _positional_constraint(c, ctx, adjacent=False)
 
+    elif c.kind in (ConstraintKind.FORALL, ConstraintKind.EXISTS):
+        # Expand quantifier over all values in the bound domain
+        domain_values = list(ctx.sort_constructors[c.bind_domain].keys())
+        sub_exprs = []
+        for val in domain_values:
+            # Create a copy of the body with bind_var replaced by val
+            bound_body = _bind_constraint(c.body, c.bind_var, val)
+            # If there's a guard, check it first
+            if c.guard is not None:
+                bound_guard = _bind_constraint(c.guard, c.bind_var, val)
+                guard_expr = _compile_constraint(bound_guard, ctx)
+                body_expr = _compile_constraint(bound_body, ctx)
+                sub_exprs.append(z3.Implies(guard_expr, body_expr))
+            else:
+                sub_exprs.append(_compile_constraint(bound_body, ctx))
+
+        if c.kind == ConstraintKind.FORALL:
+            return z3.And(*sub_exprs) if sub_exprs else z3.BoolVal(True)
+        else:  # EXISTS
+            return z3.Or(*sub_exprs) if sub_exprs else z3.BoolVal(False)
+
     elif c.kind == ConstraintKind.DISJUNCTION:
         # OR: at least one sub-constraint holds
         sub_exprs = [_compile_constraint(d, ctx) for d in c.disjuncts]
@@ -263,6 +284,31 @@ def _enum_to_int(expr: z3.ExprRef, sort_name: str, ctx: Z3Context) -> z3.ArithRe
     for name, idx in reversed(items[:-1]):
         result = z3.If(expr == constructors[name], idx, result)
     return result
+
+
+def _bind_constraint(c: Constraint, bind_var: str, value: str) -> Constraint:
+    """Create a copy of a constraint with bind_var replaced by a concrete value.
+
+    Substitutes bind_var wherever it appears as an entity reference.
+    """
+    import copy
+    bound = copy.deepcopy(c)
+
+    # Substitute in all entity fields
+    for field in ("entity", "entity1", "entity2",
+                  "condition_entity", "consequence_entity"):
+        if getattr(bound, field, None) == bind_var:
+            setattr(bound, field, value)
+
+    # Recurse into nested structures
+    if bound.disjuncts:
+        bound.disjuncts = [_bind_constraint(d, bind_var, value) for d in bound.disjuncts]
+    if bound.body:
+        bound.body = _bind_constraint(bound.body, bind_var, value)
+    if bound.guard:
+        bound.guard = _bind_constraint(bound.guard, bind_var, value)
+
+    return bound
 
 
 def _extract_witness(frl: FRLInstance, ctx: Z3Context, model: z3.ModelRef) -> dict[str, dict[str, str]]:

@@ -117,6 +117,8 @@ class ConstraintKind(Enum):
     UNIQUENESS = "uniqueness"      # AllDifferent
     CONDITIONAL = "conditional"    # if P then Q
     DISJUNCTION = "disjunction"    # OR: at least one sub-constraint holds
+    FORALL = "forall"              # ∀ var ∈ domain [WHERE guard]: constraint
+    EXISTS = "exists"              # ∃ var ∈ domain [WHERE guard]: constraint
 
     # --- Derived (kept for backward compat + readability) ---
     EXCLUSION = "exclusion"        # = ASSIGNMENT with polarity=-1
@@ -155,6 +157,8 @@ class Constraint:
                      With polarity=-1: none of disjuncts[] holds (NOR)
                      XOR = DISJUNCTION + CARDINALITY(exactly 1)
                      IFF = two CONDITIONALs (or DISJUNCTION of conjunctions)
+      FORALL:        ∀ bind_var ∈ bind_domain [WHERE guard]: body constraint
+      EXISTS:        ∃ bind_var ∈ bind_domain [WHERE guard]: body constraint
 
     Derived (backward compat):
       EXCLUSION:     = ASSIGNMENT with polarity=-1
@@ -203,6 +207,12 @@ class Constraint:
 
     # DISJUNCTION — list of sub-constraints (at least one must hold)
     disjuncts: Optional[list["Constraint"]] = None
+
+    # FORALL / EXISTS — quantified constraints
+    bind_var: Optional[str] = None       # bound variable name (e.g., "i", "w")
+    bind_domain: Optional[str] = None    # entity type to iterate over (e.g., "Workers")
+    guard: Optional["Constraint"] = None  # optional WHERE clause (e.g., adjacent(i,j))
+    body: Optional["Constraint"] = None   # the constraint to apply for each binding
 
 
 # --- Query ---
@@ -316,8 +326,16 @@ def validate(frl: FRLInstance) -> list[str]:
         elif c.kind == ConstraintKind.DISJUNCTION:
             if not c.disjuncts:
                 errors.append(f"{label}: missing disjuncts")
-            # Recursively validate each disjunct (they are Constraints too)
-            # Deep validation would require passing func_map etc. — for now just check non-empty
+
+        elif c.kind in (ConstraintKind.FORALL, ConstraintKind.EXISTS):
+            if not c.bind_var:
+                errors.append(f"{label}: missing bind_var")
+            if not c.bind_domain:
+                errors.append(f"{label}: missing bind_domain")
+            elif c.bind_domain not in type_names:
+                errors.append(f"{label}: bind_domain '{c.bind_domain}' not a known entity type")
+            if not c.body:
+                errors.append(f"{label}: missing body constraint")
 
         elif c.kind == ConstraintKind.BOUNDS:
             _check_var_entity_value(c.var, c.entity, None, label)

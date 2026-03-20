@@ -203,6 +203,30 @@ def _check_constraint(
             )
         return None
 
+    elif c.kind in (ConstraintKind.FORALL, ConstraintKind.EXISTS):
+        # Expand over domain values
+        domain_values = list(orderings.get(c.bind_domain, {}).keys())
+
+        from src.compiler.to_z3 import _bind_constraint
+
+        results = []
+        for val in domain_values:
+            bound_body = _bind_constraint(c.body, c.bind_var, val)
+            sub_result = _check_constraint(bound_body, witness, f"{label}/{val}", orderings, codomain_map)
+            results.append(sub_result)
+
+        if c.kind == ConstraintKind.FORALL:
+            # All must be satisfied
+            violations_found = [r for r in results if r is not None]
+            if violations_found:
+                return f"{label}: FORALL violated — {violations_found[0]}"
+            return None
+        else:  # EXISTS
+            # At least one must be satisfied
+            if all(r is not None for r in results):
+                return f"{label}: EXISTS — no binding satisfies the body"
+            return None
+
     elif c.kind == ConstraintKind.DISJUNCTION:
         # At least one disjunct must be satisfied
         any_satisfied = False
