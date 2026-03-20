@@ -1056,3 +1056,34 @@ If the prompted loop works, you have a paper: "FRL generation with verifier-in-t
 
 **Connection to weight compilation spark:** The RL-trained model learns constraint formalization from experience. The weight compilation approach bakes it in by construction. These are complementary — RL handles the fuzzy parts, compilation handles the deterministic parts. The endgame is both together.
 
+---
+
+## Spark: Reasoning vs knowledge mutability — the case for separation (2026-03-20)
+
+**Core insight:** LLMs bundle two capabilities with fundamentally different update frequencies:
+
+| | Reasoning/Logic | World Knowledge |
+|---|---|---|
+| **Update frequency** | Rarely (modus ponens doesn't change) | Constantly (events, prices, facts) |
+| **Training trigger** | New reasoning methods discovered | New information arrives |
+| **Ideal architecture** | Train once, stable module | RAG, knowledge base, or frequent fine-tuning |
+
+Cramming both into one set of weights means retraining everything when knowledge changes, even though the reasoning capability was fine. A separated reasoning compiler module has **low mutability** — trained once on formal reasoning patterns, stable across knowledge updates.
+
+**This strengthens the portable module architecture:** The "frozen base LLM + separable reasoning compiler" design (see earlier spark) isn't just about portability across model versions. It's about separating components by their natural update cadence. The reasoning module rides the frontier without retraining because reasoning methods don't change. The base LLM handles knowledge and gets updated independently.
+
+**Ternary weights for reasoning (speculative hunch):**
+
+Reasoning is fundamentally about logic (constraint satisfied or not, implication holds or doesn't), not probability distributions. This suggests ternary weights (-1, 0, 1) may be a natural fit for the reasoning module:
+
+- **Discrete mappings are ternary-friendly:** "no more than" → ≤ is a discrete rule, not a soft interpolation
+- **Cheap and fast:** 1.58 bits per weight, multiply-free ops (add/subtract/skip)
+- **Architecturally enforced separation:** ternary module can't be accidentally blended back into full-precision weights
+- **Connects to BitNet research** (Ma et al., 2024): ternary models are surprisingly capable for general language; they may be *especially* suited for formal/logical tasks
+
+**What's unproven:** Whether ternary is actually *better* for reasoning vs just *adequate*. The fuzzy parts of NL→FRL (pragmatic inference, ambiguity resolution) may still need full-precision weights. The hybrid compiled+learned module design handles this: compiled deterministic rules in ternary, learned fuzzy extraction in full-precision.
+
+**Testable hypothesis:** Take a small reasoning model, quantize to ternary, measure constraint extraction accuracy vs full-precision. If accuracy holds, the mutability+efficiency argument is strong.
+
+**Timeline:** Post-pipeline. Research direction for Paper 3+.
+
