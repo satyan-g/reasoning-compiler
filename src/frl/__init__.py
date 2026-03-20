@@ -1,6 +1,12 @@
 """FRL v0 — Formal Reasoning Language for assignment/scheduling domain."""
 
 from .schema import (
+    AMBIGUOUS,
+    ASSERTED,
+    CONTRADICTED,
+    EXPLICIT,
+    INFERRED,
+    NEGATED,
     CardinalityOp,
     CompareOp,
     Constraint,
@@ -15,6 +21,12 @@ from .schema import (
 )
 
 __all__ = [
+    "AMBIGUOUS",
+    "ASSERTED",
+    "CONTRADICTED",
+    "EXPLICIT",
+    "INFERRED",
+    "NEGATED",
     "CardinalityOp",
     "CompareOp",
     "Constraint",

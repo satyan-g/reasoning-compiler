@@ -104,10 +104,13 @@ def test_validate_bad_value_ref():
     assert any("Swim" in e for e in errors)
 
 
-def test_provenance_implicit():
-    p = Provenance("implied uniqueness", implicit=True)
-    assert p.implicit is True
+def test_provenance_confidence():
+    p = Provenance("implied uniqueness", confidence=0)
+    assert p.confidence == 0  # INFERRED
     assert p.text == "implied uniqueness"
+
+    p2 = Provenance("stated explicitly")
+    assert p2.confidence == 1  # EXPLICIT (default)
 
 
 def test_cardinality_constraint():

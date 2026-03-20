@@ -8,6 +8,9 @@ from typing import Optional
 import z3
 
 from src.frl.schema import (
+    AMBIGUOUS,
+    ASSERTED,
+    NEGATED,
     CardinalityOp,
     CompareOp,
     Constraint,
@@ -63,8 +66,12 @@ def compile_to_z3(frl: FRLInstance) -> Z3Context:
 
     # Compile constraints
     for i, c in enumerate(frl.constraints):
+        if c.polarity == AMBIGUOUS:
+            continue  # skip ambiguous constraints — flag for disambiguation
         label = f"c{i}"
         z3_expr = _compile_constraint(c, ctx)
+        if c.polarity == NEGATED:
+            z3_expr = z3.Not(z3_expr)
         ctx.solver.assert_and_track(z3_expr, label)
         ctx.constraint_labels[label] = i
 

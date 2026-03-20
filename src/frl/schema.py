@@ -1,6 +1,10 @@
 """FRL v0 schema for assignment/scheduling domain.
 
 Minimal dataclasses + JSON serialization. One domain only.
+
+Ternary values:
+  polarity:   +1 (asserted), 0 (ambiguous), -1 (negated)
+  confidence: +1 (explicit in NL), 0 (inferred/implicit), -1 (contradicted)
 """
 
 from __future__ import annotations
@@ -9,6 +13,17 @@ import json
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Optional
+
+
+# --- Ternary values ---
+
+ASSERTED = 1
+AMBIGUOUS = 0
+NEGATED = -1
+
+EXPLICIT = 1
+INFERRED = 0
+CONTRADICTED = -1
 
 
 # --- Provenance ---
@@ -21,7 +36,7 @@ class Provenance:
     text: str
     start: Optional[int] = None
     end: Optional[int] = None
-    implicit: bool = False
+    confidence: int = EXPLICIT  # +1 explicit, 0 inferred, -1 contradicted
 
 
 # --- Entity types (Enum sorts) ---
@@ -98,6 +113,7 @@ class Constraint:
 
     kind: ConstraintKind
     provenance: Provenance
+    polarity: int = ASSERTED  # +1 asserted, 0 ambiguous, -1 negated
 
     # EXCLUSION, ASSIGNMENT, UNIQUENESS, CARDINALITY
     var: Optional[str] = None
@@ -249,7 +265,13 @@ def _dict_to_frl(d: dict) -> FRLInstance:
     constraints = []
     for c in d["constraints"]:
         c["kind"] = ConstraintKind(c["kind"])
-        c["provenance"] = Provenance(**c["provenance"])
+        # Backward compat: convert implicit → confidence
+        prov = c["provenance"]
+        if "implicit" in prov:
+            implicit = prov.pop("implicit")
+            if "confidence" not in prov:
+                prov["confidence"] = INFERRED if implicit else EXPLICIT
+        c["provenance"] = Provenance(**prov)
         if c.get("condition_op") is not None:
             c["condition_op"] = CompareOp(c["condition_op"])
         if c.get("consequence_op") is not None:

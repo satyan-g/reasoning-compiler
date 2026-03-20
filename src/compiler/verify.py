@@ -5,6 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from src.frl.schema import (
+    AMBIGUOUS,
+    ASSERTED,
+    NEGATED,
     CardinalityOp,
     CompareOp,
     Constraint,
@@ -41,10 +44,18 @@ def verify_witness(frl: FRLInstance, witness: dict[str, dict[str, str]]) -> Veri
     violations = []
 
     for i, c in enumerate(frl.constraints):
+        if c.polarity == AMBIGUOUS:
+            continue  # skip ambiguous constraints
         label = f"constraint[{i}] ({c.kind.value})"
         result = _check_constraint(c, witness, label, orderings, codomain_map)
-        if result is not None:
-            violations.append(result)
+        if c.polarity == NEGATED:
+            # Negated: the base constraint should be VIOLATED (result not None)
+            if result is None:
+                violations.append(f"{label}: negated constraint is satisfied (should be violated)")
+            # If violated, that's correct for a negated constraint — no violation to report
+        else:
+            if result is not None:
+                violations.append(result)
 
     return VerifyResult(valid=len(violations) == 0, violations=violations)
 

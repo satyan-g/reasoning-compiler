@@ -59,15 +59,15 @@ def _zebra_frl():
         constraints=[
             # Implicit: each category is a bijection (all different houses)
             Constraint(kind=ConstraintKind.UNIQUENESS, var="nat",
-                       provenance=Provenance("Five houses, each nationality in one", implicit=True)),
+                       provenance=Provenance("Five houses, each nationality in one", confidence=0)),
             Constraint(kind=ConstraintKind.UNIQUENESS, var="col",
-                       provenance=Provenance("Each house a different color", implicit=True)),
+                       provenance=Provenance("Each house a different color", confidence=0)),
             Constraint(kind=ConstraintKind.UNIQUENESS, var="dri",
-                       provenance=Provenance("Each house a different drink", implicit=True)),
+                       provenance=Provenance("Each house a different drink", confidence=0)),
             Constraint(kind=ConstraintKind.UNIQUENESS, var="smo",
-                       provenance=Provenance("Each house a different smoke", implicit=True)),
+                       provenance=Provenance("Each house a different smoke", confidence=0)),
             Constraint(kind=ConstraintKind.UNIQUENESS, var="pet",
-                       provenance=Provenance("Each house a different pet", implicit=True)),
+                       provenance=Provenance("Each house a different pet", confidence=0)),
 
             # Clue 2: The Englishman lives in the red house
             Constraint(kind=ConstraintKind.CO_OCCURRENCE,
