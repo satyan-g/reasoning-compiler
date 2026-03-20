@@ -203,6 +203,18 @@ def _check_constraint(
             )
         return None
 
+    elif c.kind == ConstraintKind.DISJUNCTION:
+        # At least one disjunct must be satisfied
+        any_satisfied = False
+        for d in c.disjuncts:
+            result = _check_constraint(d, witness, f"{label}/disjunct", orderings, codomain_map)
+            if result is None:  # this disjunct is satisfied
+                any_satisfied = True
+                break
+        if not any_satisfied:
+            return f"{label}: no disjunct satisfied"
+        return None
+
     elif c.kind == ConstraintKind.BOUNDS:
         # var(entity) IN allowed_values
         # Polarity negation (NOT IN) is handled by the caller

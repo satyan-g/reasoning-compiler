@@ -550,6 +550,131 @@ def test_bounds_negated_solve():
     assert result.witness["assign"]["Grace"] in ("Math", "Physics")
 
 
+# --- DISJUNCTION test (Σ₂ closure: UNION / OR) ---
+
+
+def test_disjunction_solve():
+    """OR: Alice is in house 1 or house 3."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3"]),
+            EntityType("Name", ["Alice", "Bob", "Carol"]),
+        ],
+        functions=[FunctionVar("name", "Name", "House")],
+        constraints=[
+            Constraint(
+                kind=ConstraintKind.UNIQUENESS, var="name",
+                provenance=Provenance("each in different house"),
+            ),
+            Constraint(
+                kind=ConstraintKind.DISJUNCTION,
+                disjuncts=[
+                    Constraint(
+                        kind=ConstraintKind.ASSIGNMENT,
+                        var="name", entity="Alice", value="H1",
+                        provenance=Provenance("Alice in house 1"),
+                    ),
+                    Constraint(
+                        kind=ConstraintKind.ASSIGNMENT,
+                        var="name", entity="Alice", value="H3",
+                        provenance=Provenance("Alice in house 3"),
+                    ),
+                ],
+                provenance=Provenance("Alice is in house 1 or house 3"),
+            ),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    assert result.sat is True
+    assert result.witness["name"]["Alice"] in ("H1", "H3")
+
+
+def test_disjunction_verify():
+    """Verify disjunction independently."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3"]),
+            EntityType("Name", ["Alice", "Bob", "Carol"]),
+        ],
+        functions=[FunctionVar("name", "Name", "House")],
+        constraints=[
+            Constraint(
+                kind=ConstraintKind.UNIQUENESS, var="name",
+                provenance=Provenance("each in different house"),
+            ),
+            Constraint(
+                kind=ConstraintKind.DISJUNCTION,
+                disjuncts=[
+                    Constraint(
+                        kind=ConstraintKind.ASSIGNMENT,
+                        var="name", entity="Alice", value="H1",
+                        provenance=Provenance("Alice in house 1"),
+                    ),
+                    Constraint(
+                        kind=ConstraintKind.ASSIGNMENT,
+                        var="name", entity="Alice", value="H3",
+                        provenance=Provenance("Alice in house 3"),
+                    ),
+                ],
+                provenance=Provenance("Alice is in house 1 or house 3"),
+            ),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    vr = verify_witness(frl, result.witness)
+    assert vr.valid is True, vr.violations
+
+
+def test_disjunction_complex():
+    """OR with heterogeneous sub-constraints: assignment OR co_occurrence."""
+    from src.frl.schema import NEGATED
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3"]),
+            EntityType("Name", ["Alice", "Bob", "Carol"]),
+            EntityType("Color", ["Red", "Blue", "Green"]),
+        ],
+        functions=[
+            FunctionVar("name", "Name", "House"),
+            FunctionVar("color", "Color", "House"),
+        ],
+        constraints=[
+            Constraint(kind=ConstraintKind.UNIQUENESS, var="name",
+                       provenance=Provenance("unique names")),
+            Constraint(kind=ConstraintKind.UNIQUENESS, var="color",
+                       provenance=Provenance("unique colors")),
+            # "Either Alice is in house 1, or Alice and Red are in the same house"
+            Constraint(
+                kind=ConstraintKind.DISJUNCTION,
+                disjuncts=[
+                    Constraint(
+                        kind=ConstraintKind.ASSIGNMENT,
+                        var="name", entity="Alice", value="H1",
+                        provenance=Provenance("Alice in house 1"),
+                    ),
+                    Constraint(
+                        kind=ConstraintKind.CO_OCCURRENCE,
+                        var1="name", entity1="Alice",
+                        var2="color", entity2="Red",
+                        provenance=Provenance("Alice in red house"),
+                    ),
+                ],
+                provenance=Provenance("Alice in H1 or Alice in red house"),
+            ),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    assert result.sat is True
+    w = result.witness
+    alice_house = w["name"]["Alice"]
+    red_house = w["color"]["Red"]
+    # At least one disjunct must hold
+    assert alice_house == "H1" or alice_house == red_house
+
+
 # --- Verifier negative test ---
 
 

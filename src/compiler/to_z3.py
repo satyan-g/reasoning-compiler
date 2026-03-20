@@ -208,6 +208,11 @@ def _compile_constraint(c: Constraint, ctx: Z3Context) -> z3.BoolRef:
         # Derived: DISTANCE(N=1, directed=True)
         return _positional_constraint(c, ctx, adjacent=False)
 
+    elif c.kind == ConstraintKind.DISJUNCTION:
+        # OR: at least one sub-constraint holds
+        sub_exprs = [_compile_constraint(d, ctx) for d in c.disjuncts]
+        return z3.Or(*sub_exprs)
+
     elif c.kind == ConstraintKind.BOUNDS:
         # var(entity) IN allowed_values
         # Polarity negation (NOT IN) is handled by the caller via z3.Not()

@@ -116,6 +116,7 @@ class ConstraintKind(Enum):
     CARDINALITY = "cardinality"    # |{e : var(e) == value}| op N
     UNIQUENESS = "uniqueness"      # AllDifferent
     CONDITIONAL = "conditional"    # if P then Q
+    DISJUNCTION = "disjunction"    # OR: at least one sub-constraint holds
 
     # --- Derived (kept for backward compat + readability) ---
     EXCLUSION = "exclusion"        # = ASSIGNMENT with polarity=-1
@@ -150,6 +151,10 @@ class Constraint:
       CARDINALITY:   |{e : var(e) == value}| card_op card_value
       UNIQUENESS:    AllDifferent(var(e) for e in entities)
       CONDITIONAL:   if P then Q
+      DISJUNCTION:   at least one of disjuncts[] holds (UNION / OR)
+                     With polarity=-1: none of disjuncts[] holds (NOR)
+                     XOR = DISJUNCTION + CARDINALITY(exactly 1)
+                     IFF = two CONDITIONALs (or DISJUNCTION of conjunctions)
 
     Derived (backward compat):
       EXCLUSION:     = ASSIGNMENT with polarity=-1
@@ -195,6 +200,9 @@ class Constraint:
     # DISTANCE — distance between positions
     distance_n: Optional[int] = None  # the distance value
     directed: bool = False  # False: |diff|==N, True: diff==N (signed)
+
+    # DISJUNCTION — list of sub-constraints (at least one must hold)
+    disjuncts: Optional[list["Constraint"]] = None
 
 
 # --- Query ---
@@ -305,6 +313,12 @@ def validate(frl: FRLInstance) -> list[str]:
             if c.kind == ConstraintKind.DISTANCE and c.distance_n is None:
                 errors.append(f"{label}: missing distance_n")
 
+        elif c.kind == ConstraintKind.DISJUNCTION:
+            if not c.disjuncts:
+                errors.append(f"{label}: missing disjuncts")
+            # Recursively validate each disjunct (they are Constraints too)
+            # Deep validation would require passing func_map etc. — for now just check non-empty
+
         elif c.kind == ConstraintKind.BOUNDS:
             _check_var_entity_value(c.var, c.entity, None, label)
             if not c.allowed_values:
@@ -327,26 +341,30 @@ def _enum_serializer(obj):
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
 
+def _dict_to_constraint(c: dict) -> Constraint:
+    """Convert a dict to a Constraint, handling enums and nested disjuncts."""
+    c["kind"] = ConstraintKind(c["kind"])
+    prov = c["provenance"]
+    if "implicit" in prov:
+        implicit = prov.pop("implicit")
+        if "confidence" not in prov:
+            prov["confidence"] = INFERRED if implicit else EXPLICIT
+    c["provenance"] = Provenance(**prov)
+    if c.get("condition_op") is not None:
+        c["condition_op"] = CompareOp(c["condition_op"])
+    if c.get("consequence_op") is not None:
+        c["consequence_op"] = CompareOp(c["consequence_op"])
+    if c.get("card_op") is not None:
+        c["card_op"] = CardinalityOp(c["card_op"])
+    if c.get("disjuncts") is not None:
+        c["disjuncts"] = [_dict_to_constraint(dc) for dc in c["disjuncts"]]
+    return Constraint(**c)
+
+
 def _dict_to_frl(d: dict) -> FRLInstance:
     entity_types = [EntityType(**et) for et in d["entity_types"]]
     functions = [FunctionVar(**fv) for fv in d["functions"]]
-    constraints = []
-    for c in d["constraints"]:
-        c["kind"] = ConstraintKind(c["kind"])
-        # Backward compat: convert implicit → confidence
-        prov = c["provenance"]
-        if "implicit" in prov:
-            implicit = prov.pop("implicit")
-            if "confidence" not in prov:
-                prov["confidence"] = INFERRED if implicit else EXPLICIT
-        c["provenance"] = Provenance(**prov)
-        if c.get("condition_op") is not None:
-            c["condition_op"] = CompareOp(c["condition_op"])
-        if c.get("consequence_op") is not None:
-            c["consequence_op"] = CompareOp(c["consequence_op"])
-        if c.get("card_op") is not None:
-            c["card_op"] = CardinalityOp(c["card_op"])
-        constraints.append(Constraint(**c))
+    constraints = [_dict_to_constraint(c) for c in d["constraints"]]
     query = Query(
         kind=QueryKind(d["query"]["kind"]),
         description=d["query"].get("description", ""),
