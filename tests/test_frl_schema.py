@@ -136,6 +136,44 @@ def test_cardinality_constraint():
     assert errors == []
 
 
+def test_bounds_constraint():
+    """BOUNDS: Iris can only join Physics or Chemistry (IN set)."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("Person", ["Grace", "Hank", "Iris", "Jay"]),
+            EntityType("Group", ["Math", "Physics", "Chemistry", "Biology"]),
+        ],
+        functions=[FunctionVar("assign", "Person", "Group")],
+        constraints=[
+            Constraint(
+                kind=ConstraintKind.BOUNDS,
+                var="assign",
+                entity="Iris",
+                allowed_values=["Physics", "Chemistry"],
+                provenance=Provenance("Iris must join Physics or Chemistry"),
+            ),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    errors = validate(frl)
+    assert errors == []
+
+
+def test_bounds_negated():
+    """BOUNDS with polarity=-1: NOT IN set (exclusion set)."""
+    from src.frl.schema import NEGATED
+    c = Constraint(
+        kind=ConstraintKind.BOUNDS,
+        var="assign",
+        entity="Grace",
+        allowed_values=["Chemistry", "Biology"],
+        polarity=NEGATED,
+        provenance=Provenance("Grace will not join Chemistry or Biology"),
+    )
+    assert c.polarity == -1
+    assert c.allowed_values == ["Chemistry", "Biology"]
+
+
 def test_negated_conditional():
     """Conditional with NEQ consequence: if Bob welds, Cara does NOT pack."""
     c = Constraint(

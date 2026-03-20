@@ -182,6 +182,15 @@ def _compile_constraint(c: Constraint, ctx: Z3Context) -> z3.BoolRef:
         # index(var1(entity1)) == index(var2(entity2)) + 1
         return _positional_constraint(c, ctx, adjacent=False)
 
+    elif c.kind == ConstraintKind.BOUNDS:
+        # var(entity) IN allowed_values
+        # Polarity negation (NOT IN) is handled by the caller via z3.Not()
+        func = ctx.functions[c.var]
+        entity = ctx.sort_constructors[_domain_of(c.var, ctx)][c.entity]
+        codomain_name = _codomain_of(c.var, ctx)
+        value_refs = [ctx.sort_constructors[codomain_name][v] for v in c.allowed_values]
+        return z3.Or(*[func(entity) == v for v in value_refs])
+
     else:
         raise ValueError(f"Unknown constraint kind: {c.kind}")
 

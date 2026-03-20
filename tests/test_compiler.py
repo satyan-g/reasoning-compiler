@@ -370,6 +370,81 @@ def test_problem_5_verify():
     assert vr.valid is True, vr.violations
 
 
+# --- BOUNDS test ---
+
+
+def _problem_bounds():
+    """Iris can only join Physics or Chemistry (BOUNDS replaces 2 EXCLUSIONs)."""
+    return FRLInstance(
+        nl_text="Iris must join either Physics or Chemistry.",
+        entity_types=[
+            EntityType("Person", ["Grace", "Hank", "Iris", "Jay"]),
+            EntityType("Group", ["Math", "Physics", "Chemistry", "Biology"]),
+        ],
+        functions=[FunctionVar("assign", "Person", "Group")],
+        constraints=[
+            Constraint(
+                kind=ConstraintKind.UNIQUENESS,
+                var="assign",
+                provenance=Provenance("each person joins one group"),
+            ),
+            Constraint(
+                kind=ConstraintKind.BOUNDS,
+                var="assign",
+                entity="Iris",
+                allowed_values=["Physics", "Chemistry"],
+                provenance=Provenance("Iris must join Physics or Chemistry"),
+            ),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+
+
+def test_bounds_solve():
+    frl = _problem_bounds()
+    result = solve(frl)
+    assert result.sat is True
+    assert result.witness["assign"]["Iris"] in ("Physics", "Chemistry")
+
+
+def test_bounds_verify():
+    frl = _problem_bounds()
+    result = solve(frl)
+    vr = verify_witness(frl, result.witness)
+    assert vr.valid is True, vr.violations
+
+
+def test_bounds_negated_solve():
+    """NOT IN: Grace cannot join Chemistry or Biology."""
+    from src.frl.schema import NEGATED
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("Person", ["Grace", "Hank", "Iris", "Jay"]),
+            EntityType("Group", ["Math", "Physics", "Chemistry", "Biology"]),
+        ],
+        functions=[FunctionVar("assign", "Person", "Group")],
+        constraints=[
+            Constraint(
+                kind=ConstraintKind.UNIQUENESS,
+                var="assign",
+                provenance=Provenance("each person joins one group"),
+            ),
+            Constraint(
+                kind=ConstraintKind.BOUNDS,
+                var="assign",
+                entity="Grace",
+                allowed_values=["Chemistry", "Biology"],
+                polarity=NEGATED,
+                provenance=Provenance("Grace will not join Chemistry or Biology"),
+            ),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    assert result.sat is True
+    assert result.witness["assign"]["Grace"] in ("Math", "Physics")
+
+
 # --- Verifier negative test ---
 
 

@@ -167,5 +167,16 @@ def _check_constraint(
             )
         return None
 
+    elif c.kind == ConstraintKind.BOUNDS:
+        # var(entity) IN allowed_values
+        # Polarity negation (NOT IN) is handled by the caller
+        actual = witness[c.var][c.entity]
+        if actual not in c.allowed_values:
+            return (
+                f"{label}: {c.var}({c.entity}) == {actual}, "
+                f"expected IN {c.allowed_values}"
+            )
+        return None
+
     else:
         return f"{label}: unknown constraint kind {c.kind}"

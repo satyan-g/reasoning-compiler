@@ -62,11 +62,45 @@ class FunctionVar:
 
     Example: FunctionVar(name="assign", domain="Person", codomain="Task")
     means assign: Person -> Task
+
+    For arithmetic domain, use NumericVar instead.
     """
 
     name: str
     domain: str
     codomain: str
+
+
+@dataclass
+class NumericVar:
+    """A numeric variable with optional bounds.
+
+    Used in arithmetic domain. Bounded variables are decidable and fast;
+    unbounded variables may cause solver timeouts.
+
+    Examples:
+        NumericVar("price", "int", lower=0, upper=1000)  # bounded
+        NumericVar("count", "int", lower=0)               # lower-bounded only
+        NumericVar("ratio", "real")                        # unbounded
+    """
+
+    name: str
+    type: str = "int"  # "int" or "real"
+    lower: Optional[int | float] = None
+    upper: Optional[int | float] = None
+    description: str = ""
+
+    @property
+    def is_bounded(self) -> bool:
+        return self.lower is not None and self.upper is not None
+
+    @property
+    def is_lower_bounded(self) -> bool:
+        return self.lower is not None
+
+    @property
+    def is_upper_bounded(self) -> bool:
+        return self.upper is not None
 
 
 # --- Constraint types ---
@@ -81,6 +115,7 @@ class ConstraintKind(Enum):
     CO_OCCURRENCE = "co_occurrence"
     ADJACENT = "adjacent"
     RIGHT_OF = "right_of"
+    BOUNDS = "bounds"
 
 
 class CompareOp(Enum):
@@ -109,6 +144,8 @@ class Constraint:
     CO_OCCURRENCE: var1(entity1) == var2(entity2) (same codomain value)
     ADJACENT: |index(var1(entity1)) - index(var2(entity2))| == 1
     RIGHT_OF: index(var1(entity1)) == index(var2(entity2)) + 1
+    BOUNDS: var(entity) in allowed_values (value bounds)
+            With polarity=-1: var(entity) NOT in allowed_values (exclusion set)
     """
 
     kind: ConstraintKind
@@ -143,6 +180,9 @@ class Constraint:
     var2: Optional[str] = None
     entity2: Optional[str] = None
 
+    # BOUNDS — allowed values (polarity=-1 flips to excluded values)
+    allowed_values: Optional[list[str]] = None
+
 
 # --- Query ---
 
@@ -172,6 +212,7 @@ class FRLInstance:
     functions: list[FunctionVar]
     constraints: list[Constraint]
     query: Query
+    numeric_vars: list[NumericVar] = field(default_factory=list)
     nl_text: str = ""
     metadata: dict = field(default_factory=dict)
 
@@ -247,6 +288,16 @@ def validate(frl: FRLInstance) -> list[str]:
                         f"!= var2 codomain '{func_map[c.var2].codomain}'"
                     )
 
+        elif c.kind == ConstraintKind.BOUNDS:
+            _check_var_entity_value(c.var, c.entity, None, label)
+            if not c.allowed_values:
+                errors.append(f"{label}: missing allowed_values")
+            elif c.var in func_map:
+                codomain_vals = type_values.get(func_map[c.var].codomain, set())
+                for v in c.allowed_values:
+                    if v not in codomain_vals:
+                        errors.append(f"{label}: allowed value '{v}' not in codomain")
+
     return errors
 
 
@@ -283,11 +334,13 @@ def _dict_to_frl(d: dict) -> FRLInstance:
         kind=QueryKind(d["query"]["kind"]),
         description=d["query"].get("description", ""),
     )
+    numeric_vars = [NumericVar(**nv) for nv in d.get("numeric_vars", [])]
     return FRLInstance(
         entity_types=entity_types,
         functions=functions,
         constraints=constraints,
         query=query,
+        numeric_vars=numeric_vars,
         nl_text=d.get("nl_text", ""),
         metadata=d.get("metadata", {}),
     )
