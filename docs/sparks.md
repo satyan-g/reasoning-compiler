@@ -1087,3 +1087,76 @@ Reasoning is fundamentally about logic (constraint satisfied or not, implication
 
 **Timeline:** Post-pipeline. Research direction for Paper 3+.
 
+---
+
+## Spark: FRL as a constraint algebra — Borel hierarchy + optimization layer (2026-03-20)
+
+**Triggered by:** Systematic analysis of FRL completeness using real analysis / set theory.
+
+**The framing:** FRL constraint types form an algebra. Completeness can be checked by mapping against standard mathematical operations and verifying closure.
+
+### Σ-hierarchy of FRL expressiveness
+
+```
+Σ₀: base constraints (ASSIGNMENT, CO_OCCURRENCE, ORDER, DISTANCE, BOUNDS, CARDINALITY, UNIQUENESS)
+     + CONDITIONAL (implication)
+Σ₁: + complement (polarity=-1 on any constraint)
+Σ₂: + union (DISJUNCTION)                              ← CURRENT STATE
+Σ₃: + objective function + soft constraints + priorities ← OPTIMIZATION LAYER (future)
+```
+
+Each level strictly extends the previous. A Σ₃ problem with no objective and all hard constraints degrades cleanly to Σ₂ (pure SAT).
+
+### Current state (Σ₂ complete)
+
+9 primitive generators:
+
+| Generator | Set theory analog | Real analysis analog |
+|---|---|---|
+| ASSIGNMENT | Point: {h} ⊂ H | Point evaluation |
+| CO_OCCURRENCE | Diagonal: {(x,y) : x = y} | Kernel of f-g |
+| ORDER | Half-space: {(x,y) : x < y} | Open set in product topology |
+| DISTANCE | Level set: d⁻¹(N) | Metric ball boundary |
+| BOUNDS | Measurable set: S ⊂ H | Indicator function support |
+| CARDINALITY | Counting measure | Measure of preimage |
+| UNIQUENESS | Injective function constraint | Non-degeneracy |
+| CONDITIONAL | Implication: Aᶜ ∪ B | Open set in implication topology |
+| DISJUNCTION | Union: A ∪ B | Open set union |
+
+Operations: NOT (complement), AND (intersection, implicit), OR (DISJUNCTION).
+
+3 derived types (backward compat): EXCLUSION, ADJACENT, RIGHT_OF.
+
+Boolean algebra over constraints is complete.
+
+### Optimization layer (Σ₃ — future, complementary not overlapping)
+
+Lagrange multipliers motivate three additions:
+
+| Concept | What it adds | FRL representation |
+|---|---|---|
+| **OBJECTIVE** | "What's the best solution?" | New type: minimize/maximize an expression |
+| **Soft constraints** | "Prefer but don't require" | `weight: float` field on Constraint (None = hard) |
+| **Priority** | "Which to satisfy first" | `priority: int` field on Constraint |
+| **Multiplier output** | "Which constraints are binding" | Extension to SolveResult: dual variables per constraint |
+
+**Why these are complementary, not overlapping:**
+- SAT asks "does a solution exist?" — optimization asks "what's the best?"
+- Hard constraints are a special case of soft constraints (infinite weight)
+- A problem with no OBJECTIVE degrades to pure SAT
+- Z3 supports both: `z3.Solver()` for SAT, `z3.Optimize()` for optimization
+
+**Multipliers as structured feedback for the repair loop:**
+The Lagrange multiplier (dual variable) for each constraint tells the LLM:
+- multiplier > 0 → constraint is binding (active at the optimum)
+- multiplier = 0 → constraint has slack (could be tightened without cost)
+- magnitude → how much the objective improves per unit of relaxation
+
+This is the structured solver trace the LLM needs for Stage 3 (EXECUTE): "constraint c3 is the most binding; relaxing it improves the objective by 2.5 per unit."
+
+**Timeline:** After arithmetic domain is properly integrated. Optimization is the third domain (NL4Opt). Implementing Σ₃ requires `z3.Optimize()` backend, which is a clean compiler extension.
+
+**Domains by Σ-level:**
+- Σ₂: logic grids (ZebraLogic), arithmetic word problems (GSM8K)
+- Σ₃: optimization (NL4Opt), scheduling with costs, resource allocation
+
