@@ -1160,3 +1160,39 @@ This is the structured solver trace the LLM needs for Stage 3 (EXECUTE): "constr
 - Σ₂: logic grids (ZebraLogic), arithmetic word problems (GSM8K)
 - Σ₃: optimization (NL4Opt), scheduling with costs, resource allocation
 
+
+---
+
+## Spark: Bayesian confidence on constraints — repair loop prior (2026-03-20)
+
+**Triggered by:** Checking FRL against statistical / Bayesian primitives.
+
+**Finding:** FRL doesn't need probabilistic constraint *types* (the domains are deterministic). But the *meta-layer* — how confident we are in each constraint's correctness — benefits from Bayesian thinking.
+
+**Current state:** `confidence: int ∈ {+1, 0, -1}` (explicit / inferred / contradicted). This is a quantized Bayesian prior.
+
+**What continuous confidence enables:**
+
+The repair loop becomes Bayesian inference:
+```
+Prior:      P(constraint_i correct) = 0.8     (LLM's initial confidence)
+Evidence:   UNSAT core contains constraint_i
+Posterior:  P(correct | in UNSAT core) → 0.3  (Bayes update)
+Action:     Revise lowest-posterior constraint first
+```
+
+Mapping:
+
+| Statistical concept | FRL mapping |
+|---|---|
+| Prior | `confidence` on each constraint (LLM's belief in its formulation) |
+| Likelihood | UNSAT core membership (evidence about which constraints are wrong) |
+| Posterior | Updated confidence after solving (guides repair) |
+| Soft weight | `weight ≈ log(prior)` (optimization: how much to pay to satisfy) |
+| Frequentist p-value | Constraint holds across N paraphrases (robustness) |
+
+**What this does NOT add:** No probabilistic constraint types, no distributions, no sampling. Z3 is exact. This is about confidence in *formulation correctness*, not uncertainty in *problem data*.
+
+**Design decision:** Keep `confidence: int` (ternary) for now. Upgrade to `confidence: float ∈ [0,1]` when the repair loop runs at scale. The ternary value captures the essential distinction; continuous confidence is an optimization for prioritized repair.
+
+**Timeline:** Implement when repair loop exists (Paper 2+).
