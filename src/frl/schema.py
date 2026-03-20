@@ -107,15 +107,20 @@ class NumericVar:
 
 
 class ConstraintKind(Enum):
-    EXCLUSION = "exclusion"
-    ASSIGNMENT = "assignment"
-    UNIQUENESS = "uniqueness"
-    CONDITIONAL = "conditional"
-    CARDINALITY = "cardinality"
-    CO_OCCURRENCE = "co_occurrence"
-    ADJACENT = "adjacent"
-    RIGHT_OF = "right_of"
-    BOUNDS = "bounds"
+    # --- Primitive generators (Borel basis) ---
+    ASSIGNMENT = "assignment"      # var(entity) == value
+    CO_OCCURRENCE = "co_occurrence"  # var1(entity1) == var2(entity2)
+    ORDER = "order"                # index(var1(e1)) < index(var2(e2))
+    DISTANCE = "distance"          # |index(v1(e1)) - index(v2(e2))| == N (or directed)
+    BOUNDS = "bounds"              # var(entity) IN allowed_values
+    CARDINALITY = "cardinality"    # |{e : var(e) == value}| op N
+    UNIQUENESS = "uniqueness"      # AllDifferent
+    CONDITIONAL = "conditional"    # if P then Q
+
+    # --- Derived (kept for backward compat + readability) ---
+    EXCLUSION = "exclusion"        # = ASSIGNMENT with polarity=-1
+    ADJACENT = "adjacent"          # = DISTANCE(N=1, directed=False)
+    RIGHT_OF = "right_of"          # = DISTANCE(N=1, directed=True)
 
 
 class CompareOp(Enum):
@@ -135,17 +140,21 @@ class Constraint:
 
     The `kind` field determines which other fields are relevant:
 
-    EXCLUSION:   var(entity) != value
-    ASSIGNMENT:  var(entity) == value
-    UNIQUENESS:  AllDifferent(var(e) for e in entities)
-    CONDITIONAL: if condition_var(condition_entity) condition_op condition_value
-                 then consequence_var(consequence_entity) consequence_op consequence_value
-    CARDINALITY: |{e : var(e) == value}| card_op card_value
-    CO_OCCURRENCE: var1(entity1) == var2(entity2) (same codomain value)
-    ADJACENT: |index(var1(entity1)) - index(var2(entity2))| == 1
-    RIGHT_OF: index(var1(entity1)) == index(var2(entity2)) + 1
-    BOUNDS: var(entity) in allowed_values (value bounds)
-            With polarity=-1: var(entity) NOT in allowed_values (exclusion set)
+    Primitives (Borel generators):
+      ASSIGNMENT:    var(entity) == value (polarity=-1 for !=)
+      CO_OCCURRENCE: var1(entity1) == var2(entity2) (same codomain value)
+      ORDER:         index(var1(e1)) < index(var2(e2)) (strict)
+      DISTANCE:      |index(v1(e1)) - index(v2(e2))| == distance_n
+                     If directed=True: index(v1(e1)) - index(v2(e2)) == distance_n
+      BOUNDS:        var(entity) IN allowed_values (polarity=-1 for NOT IN)
+      CARDINALITY:   |{e : var(e) == value}| card_op card_value
+      UNIQUENESS:    AllDifferent(var(e) for e in entities)
+      CONDITIONAL:   if P then Q
+
+    Derived (backward compat):
+      EXCLUSION:     = ASSIGNMENT with polarity=-1
+      ADJACENT:      = DISTANCE(distance_n=1, directed=False)
+      RIGHT_OF:      = DISTANCE(distance_n=1, directed=True)
     """
 
     kind: ConstraintKind
@@ -182,6 +191,10 @@ class Constraint:
 
     # BOUNDS — allowed values (polarity=-1 flips to excluded values)
     allowed_values: Optional[list[str]] = None
+
+    # DISTANCE — distance between positions
+    distance_n: Optional[int] = None  # the distance value
+    directed: bool = False  # False: |diff|==N, True: diff==N (signed)
 
 
 # --- Query ---
@@ -276,7 +289,9 @@ def validate(frl: FRLInstance) -> list[str]:
             if c.card_value is None:
                 errors.append(f"{label}: missing card_value")
 
-        elif c.kind in (ConstraintKind.CO_OCCURRENCE, ConstraintKind.ADJACENT, ConstraintKind.RIGHT_OF):
+        elif c.kind in (ConstraintKind.CO_OCCURRENCE, ConstraintKind.ORDER,
+                        ConstraintKind.DISTANCE,
+                        ConstraintKind.ADJACENT, ConstraintKind.RIGHT_OF):
             # var1(entity1) and var2(entity2) — entity is in domain, no value to check
             _check_var_entity_value(c.var1, c.entity1, None, f"{label} var1")
             _check_var_entity_value(c.var2, c.entity2, None, f"{label} var2")
@@ -287,6 +302,8 @@ def validate(frl: FRLInstance) -> list[str]:
                         f"{label}: var1 codomain '{func_map[c.var1].codomain}' "
                         f"!= var2 codomain '{func_map[c.var2].codomain}'"
                     )
+            if c.kind == ConstraintKind.DISTANCE and c.distance_n is None:
+                errors.append(f"{label}: missing distance_n")
 
         elif c.kind == ConstraintKind.BOUNDS:
             _check_var_entity_value(c.var, c.entity, None, label)

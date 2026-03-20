@@ -174,12 +174,38 @@ def _compile_constraint(c: Constraint, ctx: Z3Context) -> z3.BoolRef:
         e2 = ctx.sort_constructors[_domain_of(c.var2, ctx)][c.entity2]
         return func1(e1) == func2(e2)
 
+    elif c.kind == ConstraintKind.ORDER:
+        # index(var1(e1)) < index(var2(e2)) — strict ordering
+        func1 = ctx.functions[c.var1]
+        func2 = ctx.functions[c.var2]
+        e1 = ctx.sort_constructors[_domain_of(c.var1, ctx)][c.entity1]
+        e2 = ctx.sort_constructors[_domain_of(c.var2, ctx)][c.entity2]
+        codomain = _codomain_of(c.var1, ctx)
+        pos1 = _enum_to_int(func1(e1), codomain, ctx)
+        pos2 = _enum_to_int(func2(e2), codomain, ctx)
+        return pos1 < pos2
+
+    elif c.kind == ConstraintKind.DISTANCE:
+        # |index(v1(e1)) - index(v2(e2))| == N (or directed: diff == N)
+        func1 = ctx.functions[c.var1]
+        func2 = ctx.functions[c.var2]
+        e1 = ctx.sort_constructors[_domain_of(c.var1, ctx)][c.entity1]
+        e2 = ctx.sort_constructors[_domain_of(c.var2, ctx)][c.entity2]
+        codomain = _codomain_of(c.var1, ctx)
+        pos1 = _enum_to_int(func1(e1), codomain, ctx)
+        pos2 = _enum_to_int(func2(e2), codomain, ctx)
+        diff = pos1 - pos2
+        if c.directed:
+            return diff == c.distance_n
+        else:
+            return z3.Or(diff == c.distance_n, diff == -c.distance_n)
+
     elif c.kind == ConstraintKind.ADJACENT:
-        # |index(var1(entity1)) - index(var2(entity2))| == 1
+        # Derived: DISTANCE(N=1, directed=False)
         return _positional_constraint(c, ctx, adjacent=True)
 
     elif c.kind == ConstraintKind.RIGHT_OF:
-        # index(var1(entity1)) == index(var2(entity2)) + 1
+        # Derived: DISTANCE(N=1, directed=True)
         return _positional_constraint(c, ctx, adjacent=False)
 
     elif c.kind == ConstraintKind.BOUNDS:

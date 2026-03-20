@@ -370,6 +370,111 @@ def test_problem_5_verify():
     assert vr.valid is True, vr.violations
 
 
+# --- ORDER test (Borel primitive: strict <) ---
+
+
+def test_order_solve():
+    """ORDER: Fred's parent is somewhere left of Eric."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3"]),
+            EntityType("Name", ["Alice", "Bob", "Eric"]),
+        ],
+        functions=[FunctionVar("name", "Name", "House")],
+        constraints=[
+            Constraint(kind=ConstraintKind.UNIQUENESS, var="name",
+                       provenance=Provenance("each in different house")),
+            Constraint(kind=ConstraintKind.ORDER,
+                       var1="name", entity1="Alice",
+                       var2="name", entity2="Eric",
+                       provenance=Provenance("Alice is somewhere left of Eric")),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    assert result.sat is True
+    w = result.witness["name"]
+    houses = ["H1", "H2", "H3"]
+    assert houses.index(w["Alice"]) < houses.index(w["Eric"])
+
+
+def test_order_verify():
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3"]),
+            EntityType("Name", ["Alice", "Bob", "Eric"]),
+        ],
+        functions=[FunctionVar("name", "Name", "House")],
+        constraints=[
+            Constraint(kind=ConstraintKind.UNIQUENESS, var="name",
+                       provenance=Provenance("each in different house")),
+            Constraint(kind=ConstraintKind.ORDER,
+                       var1="name", entity1="Alice",
+                       var2="name", entity2="Eric",
+                       provenance=Provenance("Alice is somewhere left of Eric")),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    vr = verify_witness(frl, result.witness)
+    assert vr.valid is True, vr.violations
+
+
+# --- DISTANCE test (Borel primitive: |diff| == N or directed) ---
+
+
+def test_distance_solve():
+    """DISTANCE: Alice is exactly 2 houses from Bob."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3", "H4"]),
+            EntityType("Name", ["Alice", "Bob", "Carol", "Dave"]),
+        ],
+        functions=[FunctionVar("name", "Name", "House")],
+        constraints=[
+            Constraint(kind=ConstraintKind.UNIQUENESS, var="name",
+                       provenance=Provenance("each in different house")),
+            Constraint(kind=ConstraintKind.DISTANCE,
+                       var1="name", entity1="Alice",
+                       var2="name", entity2="Bob",
+                       distance_n=2,
+                       provenance=Provenance("Alice is exactly 2 houses from Bob")),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    assert result.sat is True
+    w = result.witness["name"]
+    houses = ["H1", "H2", "H3", "H4"]
+    assert abs(houses.index(w["Alice"]) - houses.index(w["Bob"])) == 2
+
+
+def test_distance_directed_solve():
+    """DISTANCE directed: Alice is exactly 2 positions RIGHT of Bob."""
+    frl = FRLInstance(
+        entity_types=[
+            EntityType("House", ["H1", "H2", "H3", "H4"]),
+            EntityType("Name", ["Alice", "Bob", "Carol", "Dave"]),
+        ],
+        functions=[FunctionVar("name", "Name", "House")],
+        constraints=[
+            Constraint(kind=ConstraintKind.UNIQUENESS, var="name",
+                       provenance=Provenance("each in different house")),
+            Constraint(kind=ConstraintKind.DISTANCE,
+                       var1="name", entity1="Alice",
+                       var2="name", entity2="Bob",
+                       distance_n=2, directed=True,
+                       provenance=Provenance("Alice is 2 positions right of Bob")),
+        ],
+        query=Query(kind=QueryKind.FIND_ASSIGNMENT),
+    )
+    result = solve(frl)
+    assert result.sat is True
+    w = result.witness["name"]
+    houses = ["H1", "H2", "H3", "H4"]
+    assert houses.index(w["Alice"]) - houses.index(w["Bob"]) == 2
+
+
 # --- BOUNDS test ---
 
 

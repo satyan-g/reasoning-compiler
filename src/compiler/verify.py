@@ -139,6 +139,42 @@ def _check_constraint(
             )
         return None
 
+    elif c.kind == ConstraintKind.ORDER:
+        val1 = witness[c.var1][c.entity1]
+        val2 = witness[c.var2][c.entity2]
+        codomain = codomain_map[c.var1]
+        ordering = orderings[codomain]
+        idx1 = ordering[val1]
+        idx2 = ordering[val2]
+        if not (idx1 < idx2):
+            return (
+                f"{label}: {c.var1}({c.entity1}) at position {idx1}, "
+                f"{c.var2}({c.entity2}) at position {idx2}, expected idx1 < idx2"
+            )
+        return None
+
+    elif c.kind == ConstraintKind.DISTANCE:
+        val1 = witness[c.var1][c.entity1]
+        val2 = witness[c.var2][c.entity2]
+        codomain = codomain_map[c.var1]
+        ordering = orderings[codomain]
+        idx1 = ordering[val1]
+        idx2 = ordering[val2]
+        diff = idx1 - idx2
+        if c.directed:
+            if diff != c.distance_n:
+                return (
+                    f"{label}: {c.var1}({c.entity1}) at {idx1}, "
+                    f"{c.var2}({c.entity2}) at {idx2}, diff={diff}, expected {c.distance_n}"
+                )
+        else:
+            if abs(diff) != c.distance_n:
+                return (
+                    f"{label}: {c.var1}({c.entity1}) at {idx1}, "
+                    f"{c.var2}({c.entity2}) at {idx2}, |diff|={abs(diff)}, expected {c.distance_n}"
+                )
+        return None
+
     elif c.kind == ConstraintKind.ADJACENT:
         val1 = witness[c.var1][c.entity1]
         val2 = witness[c.var2][c.entity2]
